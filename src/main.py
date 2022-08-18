@@ -1,6 +1,10 @@
 import os
 import discord
 from dotenv import load_dotenv
+import datetime;
+
+#ct = datetime.datetime.now()
+#embedVar.add_field(name="timestamp", value=ct, inline=False)
 
 ### CONSTRUCTORS ###
 load_dotenv()
@@ -13,15 +17,6 @@ reaction_count_threshold = 0
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
-
-@client.event
-async def on_message(message):
-    if message.author == client.user:
-        return
-
-    if message.content.startswith('$hello'):
-        print(f'Messaged Received from {message.author}! Sending response...')
-        #await message.channel.send('Hello!')
 
 @client.event
 async def on_raw_reaction_add(payload):
@@ -37,8 +32,13 @@ async def on_raw_reaction_add(payload):
 
     for reaction in message.reactions:
         if reaction.count > reaction_count_threshold:
-            print(f'Messaged qualifies for starboard. Posting to starboard channel, ...')
+            print(f'Messaged qualifies for starboard. Posting to starboard channel, {sb_channel_name}...')
             channel = client.get_channel(sb_channel_id)
-            await channel.send('Hello!')
+            # Create Embed Content
+            embedVar = discord.Embed(title="New Starred Message!", description=message.content, color=0x00ff00)
+            embedVar.add_field(name="Message", value=f'[Link]({message.jump_url})', inline=True)
+            embedVar.add_field(name="Channel", value=channel.name, inline=True)
+            embedVar.add_field(name="Poster", value=message.author.name, inline=True)
+            starred_message = await channel.send(embed=embedVar)
         
 client.run(os.getenv('BS_TOKEN'))
