@@ -23,6 +23,7 @@ def createEmbed(message, payload, reaction):
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
     return embedVar
 
+### CLIENT EVENT ACTIONS ###
 @client.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(client))
