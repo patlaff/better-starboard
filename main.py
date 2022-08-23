@@ -67,10 +67,11 @@ async def on_message(message):
         guild_id = message.guild.id
         guild = client.get_guild(guild_id)
         sb_channel_name = message.content.replace(set_string,'').strip()
+        logger.info(f'sb_channel_name: {sb_channel_name}')
 
         # Check if Channel exists in Server
         try:
-            sb_channel = discord.utils.get(guild.channels, name=sb_channel_name)
+            discord.utils.get(guild.channels, name=sb_channel_name)
         except:
             logger.info(f"Channel, {sb_channel_name}, does not exist on this server.")
             await message.channel.send(f"Channel, {sb_channel_name}, does not exist on this server. Please try this command again with a valid channel.")
