@@ -17,10 +17,11 @@ cur = conn.cursor()
 
 ## SQL DB SETUP ###
 def createTables():
+    
+    ## PINS ##
     # with conn:
     #     conn.execute("DROP TABLE PINS;")
-    #
-
+    
     with conn:
         cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='PINS'")
 
@@ -31,9 +32,29 @@ def createTables():
         with conn:
             conn.execute("""
                 CREATE TABLE PINS (
-                    sb_message_id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+                    sb_message_id INTEGER NOT NULL PRIMARY KEY,
                     guild_id INTEGER NOT NULL,
                     channel_id INTEGER NOT NULL,
                     message_id INTEGER NOT NULL
+                );
+            """)
+
+    ## CONFIGS ##
+    # with conn:
+    #     conn.execute("DROP TABLE CONFIGS;")
+    
+    with conn:
+        cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='CONFIGS'")
+
+    if cur.fetchone()[0]==1:
+        logger.info('Table, CONFIGS, already exists.')
+    else:
+        logger.info('Table does not exist. Creating table, CONFIGS...')
+        with conn:
+            conn.execute("""
+                CREATE TABLE CONFIGS (
+                    guild_id INTEGER NOT NULL PRIMARY KEY,
+                    sb_channel_name TEXT NOT NULL,
+                    reaction_count_threshold INTEGER NOT NULL
                 );
             """)
