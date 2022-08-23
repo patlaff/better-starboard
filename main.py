@@ -37,11 +37,11 @@ def createEmbed(message, payload, reaction):
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
     return embedVar
 
-def insertConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
-    return
+# def insertConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
+#     return
 
-def updateConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
-    return
+# def updateConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
+#     return
 
 
 ### CLIENT EVENT ACTIONS ###
@@ -94,7 +94,7 @@ async def on_message(message):
             # Update existing config with new starboard if config present in DB
             cur.execute(f"""
                 UPDATE CONFIGS
-                SET sb_channel_name = {sb_channel_name}
+                SET sb_channel_name = "{sb_channel_name}"
                 WHERE
                     guild_id=:guild_id
             """, {"guild_id": guild_id})
@@ -179,7 +179,7 @@ async def on_raw_reaction_add(payload):
                 return
 
         if reaction.count >= reaction_count_threshold:
-            logger.info(f'Messaged qualifies for starboard. Posting to starboard channel, {sb_channel_name}...')
+            logger.info(f'Messaged qualifies for {bot_name}. Posting to {bot_name} channel, {sb_channel_name}...')
             channel = client.get_channel(sb_channel_id)
 
             embedVar = createEmbed(message, payload, reaction)
