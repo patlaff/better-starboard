@@ -22,7 +22,7 @@ reaction_count_threshold = 3
 ### CONSTRUCTORS ###
 createTables()
 load_dotenv()
-client = discord.Client()
+client = discord.Client(intents=discord.Intents.default())
 conn = sql.connect('sb.db')
 
 ### GLOBAL FUNCTIONS ###
