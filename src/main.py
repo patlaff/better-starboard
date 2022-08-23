@@ -1,10 +1,6 @@
 import os
 import discord
 from dotenv import load_dotenv
-import datetime;
-
-#ct = datetime.datetime.now()
-#embedVar.add_field(name="timestamp", value=ct, inline=False)
 
 ### CONSTRUCTORS ###
 load_dotenv()
