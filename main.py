@@ -1,10 +1,13 @@
 import os
 import discord
-from dotenv import load_dotenv
+import logging
 import sqlite3 as sql
-import datetime
+from dotenv import load_dotenv
 
-### GLOBAL  VARS ###
+### CONFIG ###
+logging.basicConfig(filename='bs.log', level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+### GLOBAL VARS ###
 sb_channel_name = "starboard-testing"
 reaction_count_threshold = 3
 
@@ -26,11 +29,11 @@ def createEmbed(message, payload, reaction):
 ### CLIENT EVENT ACTIONS ###
 @client.event
 async def on_ready():
-    print('We have logged in as {0.user}'.format(client))
+    logging.info('We have logged in as {0.user}'.format(client))
 
 @client.event
 async def on_raw_reaction_add(payload):
-    print(f'{payload.member.name} added the reaction, {payload.emoji} to the message with ID: {payload.message_id} in channel, {client.get_channel(payload.channel_id)}')
+    logging.info(f'{payload.member.name} added the reaction, {payload.emoji} to the message with ID: {payload.message_id} in channel, {client.get_channel(payload.channel_id)}')
 
     # Open DB Cursor
     cur = conn.cursor()
@@ -52,12 +55,12 @@ async def on_raw_reaction_add(payload):
     # Get all starred messages in Starboard Channel from DB
     cur.row_factory = lambda cursor, row: row[0]
     message_ids = cur.execute("SELECT message_id FROM PINS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-    print(f"Starred Messages: {message_ids}")
+    logging.info(f"Starred Messages: {message_ids}")
 
     for reaction in message.reactions:
 
         if message_id in message_ids:
-            print('Message already starred. Updating reaction count...')
+            logging.info(f'Message already starred. Updating reaction count for message, {message_id} to {reaction.count}...')
 
             # Update starred message with new reaction count
             if reaction.count >= reaction_count_threshold:
@@ -70,7 +73,7 @@ async def on_raw_reaction_add(payload):
             return
 
         if reaction.count >= reaction_count_threshold:
-            print(f'Messaged qualifies for starboard. Posting to starboard channel, {sb_channel_name}...')
+            logging.info(f'Messaged qualifies for starboard. Posting to starboard channel, {sb_channel_name}...')
             channel = client.get_channel(sb_channel_id)
 
             embedVar = createEmbed(message, payload, reaction)
