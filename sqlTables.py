@@ -25,9 +25,9 @@ def createTables():
         cur.execute("SELECT count(name) FROM sqlite_master WHERE type='table' AND name='PINS'")
 
     if cur.fetchone()[0]==1:
-        logging.info('Table, PINS, already exists.')
+        logger.info('Table, PINS, already exists.')
     else:
-        logging.info('Table does not exist. Creating table, PINS...')
+        logger.info('Table does not exist. Creating table, PINS...')
         with conn:
             conn.execute("""
                 CREATE TABLE PINS (
