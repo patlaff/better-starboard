@@ -1,4 +1,5 @@
 import os
+import sys
 import discord
 import logging
 from sqlTables import createTables
@@ -8,7 +9,7 @@ from dotenv import load_dotenv
 ### CONFIG ###
 log_folder = "logs"
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(f'{log_folder}/bs.log')
+handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/bs.log'))
 handler.setFormatter(formatter)
 
 logger = logging.getLogger('bs_logger')
@@ -24,14 +25,17 @@ default_reaction_count_threshold = 3
 ### CONSTRUCTORS ###
 createTables()
 load_dotenv()
-client = discord.Client(intents=discord.Intents.default())
+intents = discord.Intents.all()
+intents.presences = False
+intents.members = False
+client = discord.Client(intents=intents)
 conn = sql.connect('sb.db')
 
 ### GLOBAL FUNCTIONS ###
 def createEmbed(message, payload, reaction):
     # Create Embed Content
     embedVar = discord.Embed(description=message.content, color=0xffffff)
-    embedVar.set_author(name=message.author.name, icon_url=message.author.avatar_url_as(size=1024))
+    embedVar.set_author(name=message.author.name, icon_url=message.author.display_avatar)
     embedVar.insert_field_at(index=1, name="Message", value=f"[Link]({message.jump_url})", inline=True)
     embedVar.insert_field_at(index=2, name="Channel", value=message.channel.name, inline=True)
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
@@ -67,14 +71,14 @@ async def on_message(message):
         guild_id = message.guild.id
         guild = client.get_guild(guild_id)
         sb_channel_name = message.content.replace(set_string,'').strip()
-        logger.info(f'sb_channel_name: {sb_channel_name}')
 
         # Check if Channel exists in Server
         try:
             discord.utils.get(guild.channels, name=sb_channel_name)
         except:
-            logger.info(f"Channel, {sb_channel_name}, does not exist on this server.")
-            await message.channel.send(f"Channel, {sb_channel_name}, does not exist on this server. Please try this command again with a valid channel.")
+            response = f"Channel, {sb_channel_name}, does not exist on this server."
+            await message.channel.send(f"{response} Please try this command again with a valid channel.")
+            logger.info(response)
             return
 
         # Check if this guild has already set a starboard config
@@ -89,7 +93,9 @@ async def on_message(message):
                 )
             """)
             conn.commit()
-            await message.channel.send(f"Channel, {sb_channel_name}, has been added as this server's {bot_name}. Default reaction threshold was set to {default_reaction_count_threshold}. Use {thresh_string} to set a custom threshold.")
+            response = f"Channel, {sb_channel_name}, has been added as this server's {bot_name}. Default reaction threshold was set to {default_reaction_count_threshold}. Use {thresh_string} to set a custom threshold."
+            await message.channel.send(response)
+            logger.info(response)
         else:
             # Update existing config with new starboard if config present in DB
             cur.execute(f"""
@@ -99,7 +105,9 @@ async def on_message(message):
                     guild_id=:guild_id
             """, {"guild_id": guild_id})
             conn.commit()
-            await message.channel.send(f"Channel, {sb_channel_name}, has been updated as this server's {bot_name}.")
+            response = f"Channel, {sb_channel_name}, has been updated as this server's {bot_name}."
+            await message.channel.send(response)
+            logger.info(response)
 
     # Set custom reaction count threshold for server
     if message.content.startswith(thresh_string):
@@ -122,7 +130,10 @@ async def on_message(message):
                     guild_id=:guild_id
             """, {"guild_id": guild_id})
             conn.commit()
-            await message.channel.send(f"A new reaction count threshold of {reaction_count_threshold} has been updated for this server's {bot_name}.")
+            response = f"A new reaction count threshold of {reaction_count_threshold} has been updated for this server's {bot_name}."
+            await message.channel.send(response)
+            logger.info(response)
+
 
 @client.event
 async def on_raw_reaction_add(payload):
