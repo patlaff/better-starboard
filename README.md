@@ -5,3 +5,13 @@ If you're anything like me and my friends, you use reactions extremely unpredict
 Better-Starboard takes the opposite approach. This bot will pin any message that gets *any* reaction over a set threshold to the starboard, and allows users to except certain emojis.
 
 This results in, what we believe, is a much more versatile method of archiving popular messages on your server.
+
+## Installation
+
+[Install Using This Link](https://discord.com/api/oauth2/authorize?client_id=1008147831443427379&permissions=8&scope=bot)
+
+Note that the bot currently requires administrator rights. I will pull in these permissions in a future release.
+
+## Contribution
+
+Feel free to submit issues and pull requests here.
