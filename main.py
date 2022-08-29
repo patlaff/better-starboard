@@ -1,7 +1,8 @@
 import os
 import sys
-import discord
 import logging
+import discord
+from discord.ext import commands
 from sqlTables import createTables
 import sqlite3 as sql
 from dotenv import load_dotenv
@@ -18,9 +19,7 @@ logger.addHandler(handler)
 
 ### GLOBAL VARS ###
 bot_name = 'better-starboard'
-set_string = '|set'
-thresh_string = '|threshold'
-default_reaction_count_threshold = 3
+default_reaction_count_threshold = 5
 
 ### CONSTRUCTORS ###
 createTables()
@@ -28,7 +27,7 @@ load_dotenv()
 intents = discord.Intents.all()
 intents.presences = False
 intents.members = False
-client = discord.Client(intents=intents)
+bot = commands.Bot(command_prefix="|", intents=intents)
 conn = sql.connect('sb.db')
 
 ### GLOBAL FUNCTIONS ###
@@ -48,94 +47,103 @@ def createEmbed(message, payload, reaction):
 #     return
 
 
-### CLIENT EVENT ACTIONS ###
-@client.event
-async def on_ready():
-    logger.info('We have logged in as {0.user}'.format(client))
+### BOT COMMANDS ###
+@bot.command(
+    # ADDS THIS VALUE TO THE $HELP PING MESSAGE.
+	help="Use this command to set the starboard channel for this server. Ex: |set <channel> Ex: |set starboard-channel",
+	# ADDS THIS VALUE TO THE $HELP MESSAGE.
+	brief="Use |set <channel> to set the starboard channel for this server."
+)
+async def set(ctx, arg):
+    cur = conn.cursor()
 
+    guild_id = ctx.guild.id
+    guild = bot.get_guild(guild_id)
+    sb_channel_name = arg
+
+    # Check if Channel exists in Server
+    try:
+        discord.utils.get(guild.channels, name=sb_channel_name)
+    except:
+        response = f"Channel, {sb_channel_name}, does not exist on this server."
+        await ctx.channel.send(f"{response} Please try this command again with a valid channel.")
+        logger.info(response)
+        return
+
+    # Check if this guild has already set a starboard config
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        # Insert initial config with default reaction_count_threshold if no config present in DB
+        cur.execute(f"""
+            INSERT INTO CONFIGS VALUES (
+                '{guild_id}',
+                '{sb_channel_name}',
+                '{default_reaction_count_threshold}'
+            )
+        """)
+        conn.commit()
+        response = f"Channel, {sb_channel_name}, has been added as this server's {bot_name}. Default reaction threshold was set to {default_reaction_count_threshold}. Use |threshold to set a custom threshold."
+        await ctx.channel.send(response)
+        logger.info(response)
+    else:
+        # Update existing config with new starboard if config present in DB
+        cur.execute(f"""
+            UPDATE CONFIGS
+            SET sb_channel_name = "{sb_channel_name}"
+            WHERE
+                guild_id=:guild_id
+        """, {"guild_id": guild_id})
+        conn.commit()
+        response = f"Channel, {sb_channel_name}, has been updated as this server's {bot_name}."
+        await ctx.channel.send(response)
+        logger.info(response)
+
+@bot.command(
+    # ADDS THIS VALUE TO THE $HELP PING MESSAGE.
+	help="Use this command to set the reaction threshold for posting messages to your starboard. Default is 5.",
+	# ADDS THIS VALUE TO THE $HELP MESSAGE.
+	brief="Use |threshold <int> to set the reaction threshold for posting messages to your starboard."
+)
+async def threshold(ctx, arg):
+    cur = conn.cursor()
+
+    guild_id = ctx.guild.id
+    guild = bot.get_guild(guild_id)
+    reaction_count_threshold = arg
+    
+    # Check if this guild has already set a starboard config
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        await ctx.channel.send(f"Please configure a {bot_name} channel for this server before setting a custom reaction count threshold. Use |set to do so.")
+    else:
+        # Update existing config with new starboard if config present in DB
+        cur.execute(f"""
+            UPDATE CONFIGS
+            SET reaction_count_threshold = {reaction_count_threshold}
+            WHERE
+                guild_id=:guild_id
+        """, {"guild_id": guild_id})
+        conn.commit()
+        response = f"A new reaction count threshold of {reaction_count_threshold} has been updated for this server's {bot_name}."
+        await ctx.channel.send(response)
+        logger.info(response)
+
+### BOT EVENTS ###
+@bot.event
+async def on_ready():
+    logger.info('We have logged in as {0.user}'.format(bot))
 
 # @bot.command()
 # @commands.has_permissions([manage_channels=True])
-@client.event
+@bot.event
 async def on_message(message):
     # Make sure message was not sent by this bot
-    if message.author == client.user:
+    if message.author == bot.user:
         return
     
-    # Make sure author of this message has the appropriate role
+    await bot.process_commands(message)
 
-    ## Set starboard channel for server
-    if message.content.startswith(set_string):
-        cur = conn.cursor()
-
-        guild_id = message.guild.id
-        guild = client.get_guild(guild_id)
-        sb_channel_name = message.content.replace(set_string,'').strip()
-
-        # Check if Channel exists in Server
-        try:
-            discord.utils.get(guild.channels, name=sb_channel_name)
-        except:
-            response = f"Channel, {sb_channel_name}, does not exist on this server."
-            await message.channel.send(f"{response} Please try this command again with a valid channel.")
-            logger.info(response)
-            return
-
-        # Check if this guild has already set a starboard config
-        config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-        if len(config_check)==0:
-            # Insert initial config with default reaction_count_threshold if no config present in DB
-            cur.execute(f"""
-                INSERT INTO CONFIGS VALUES (
-                    '{guild_id}',
-                    '{sb_channel_name}',
-                    '{default_reaction_count_threshold}'
-                )
-            """)
-            conn.commit()
-            response = f"Channel, {sb_channel_name}, has been added as this server's {bot_name}. Default reaction threshold was set to {default_reaction_count_threshold}. Use {thresh_string} to set a custom threshold."
-            await message.channel.send(response)
-            logger.info(response)
-        else:
-            # Update existing config with new starboard if config present in DB
-            cur.execute(f"""
-                UPDATE CONFIGS
-                SET sb_channel_name = "{sb_channel_name}"
-                WHERE
-                    guild_id=:guild_id
-            """, {"guild_id": guild_id})
-            conn.commit()
-            response = f"Channel, {sb_channel_name}, has been updated as this server's {bot_name}."
-            await message.channel.send(response)
-            logger.info(response)
-
-    # Set custom reaction count threshold for server
-    if message.content.startswith(thresh_string):
-        cur = conn.cursor()
-
-        guild_id = message.guild.id
-        guild = client.get_guild(guild_id)
-        reaction_count_threshold = message.content.replace(thresh_string,'').strip()
-        
-        # Check if this guild has already set a starboard config
-        config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-        if len(config_check)==0:
-            await message.channel.send(f"Please configure a {bot_name} channel for this server before setting a custom reaction count threshold. Use {set_string} to do so.")
-        else:
-            # Update existing config with new starboard if config present in DB
-            cur.execute(f"""
-                UPDATE CONFIGS
-                SET reaction_count_threshold = {reaction_count_threshold}
-                WHERE
-                    guild_id=:guild_id
-            """, {"guild_id": guild_id})
-            conn.commit()
-            response = f"A new reaction count threshold of {reaction_count_threshold} has been updated for this server's {bot_name}."
-            await message.channel.send(response)
-            logger.info(response)
-
-
-@client.event
+@bot.event
 async def on_raw_reaction_add(payload):
 
     # Commit some common vars
@@ -144,7 +152,7 @@ async def on_raw_reaction_add(payload):
     message_id = payload.message_id
 
     # Get context objects
-    guild = client.get_guild(guild_id)
+    guild = bot.get_guild(guild_id)
     channel = guild.get_channel(channel_id)
     message = await channel.fetch_message(message_id)
 
@@ -160,8 +168,8 @@ async def on_raw_reaction_add(payload):
         sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
 
     # Log reaction
-    logger.info(f'{payload.member.name} added the reaction, {payload.emoji} to the message with ID: {payload.message_id} in channel, {client.get_channel(payload.channel_id)}')
-   
+    logger.info(f'{payload.member.name} added the reaction, {payload.emoji} to the message with ID: {payload.message_id} in channel, {bot.get_channel(payload.channel_id)}')
+
     # Get Starboard Channel
     sb_channel = discord.utils.get(guild.channels, name=sb_channel_name)
     sb_channel_id = sb_channel.id
@@ -191,7 +199,7 @@ async def on_raw_reaction_add(payload):
 
         if reaction.count >= reaction_count_threshold:
             logger.info(f'Messaged qualifies for {bot_name}. Posting to {bot_name} channel, {sb_channel_name}...')
-            channel = client.get_channel(sb_channel_id)
+            channel = bot.get_channel(sb_channel_id)
 
             embedVar = createEmbed(message, payload, reaction)
             starred_message = await channel.send(embed=embedVar)
@@ -207,5 +215,5 @@ async def on_raw_reaction_add(payload):
             conn.commit()
     
     cur.close()
-        
-client.run(os.getenv('BS_TOKEN'))
+
+bot.run(os.getenv('BS_TOKEN'))
