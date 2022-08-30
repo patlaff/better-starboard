@@ -28,7 +28,7 @@ jobs:
         source: "./"
         target: "~/programs/better-starboard"
 
-    - name: executing remote ssh commands using password
+    - name: Stop and Restart application on host
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}
