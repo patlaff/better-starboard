@@ -12,7 +12,6 @@ log_folder = "logs"
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/bs.log'))
 handler.setFormatter(formatter)
-
 logger = logging.getLogger('bs_logger')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
@@ -22,12 +21,23 @@ bot_name = 'better-starboard'
 default_reaction_count_threshold = 5
 
 ### CONSTRUCTORS ###
-createTables()
+# Load token
 load_dotenv()
+# Create and configure Discord bot
 intents = discord.Intents.all()
 intents.presences = False
 intents.members = False
-bot = commands.Bot(command_prefix="|", intents=intents)
+help_command = commands.DefaultHelpCommand(
+    no_category = 'Commands'
+)
+bot = commands.Bot(
+    command_prefix="|",
+    intents=intents,
+    help_command = help_command
+)
+# Create SQL Tables
+createTables()
+# Connect to SQL DB
 conn = sql.connect('sb.db')
 
 ### GLOBAL FUNCTIONS ###
@@ -40,18 +50,10 @@ def createEmbed(message, payload, reaction):
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
     return embedVar
 
-# def insertConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
-#     return
-
-# def updateConfig(guild_id, sb_channel_name, reaction_count_threshold, message):
-#     return
-
 
 ### BOT COMMANDS ###
 @bot.command(
-    # ADDS THIS VALUE TO THE $HELP PING MESSAGE.
 	help="Use this command to set the starboard channel for this server. Ex: |set <channel> Ex: |set starboard-channel",
-	# ADDS THIS VALUE TO THE $HELP MESSAGE.
 	brief="Use |set <channel> to set the starboard channel for this server."
 )
 async def set(ctx, arg):
@@ -62,9 +64,8 @@ async def set(ctx, arg):
     sb_channel_name = arg
 
     # Check if Channel exists in Server
-    try:
-        discord.utils.get(guild.channels, name=sb_channel_name)
-    except:
+    is_channel = discord.utils.get(guild.channels, name=sb_channel_name)
+    if not is_channel:
         response = f"Channel, {sb_channel_name}, does not exist on this server."
         await ctx.channel.send(f"{response} Please try this command again with a valid channel.")
         logger.info(response)
@@ -99,10 +100,8 @@ async def set(ctx, arg):
         logger.info(response)
 
 @bot.command(
-    # ADDS THIS VALUE TO THE $HELP PING MESSAGE.
 	help="Use this command to set the reaction threshold for posting messages to your starboard. Default is 5.",
-	# ADDS THIS VALUE TO THE $HELP MESSAGE.
-	brief="Use |threshold <int> to set the reaction threshold for posting messages to your starboard."
+	brief="Use |threshold <int> to set the number of reactions needed."
 )
 async def threshold(ctx, arg):
     cur = conn.cursor()
@@ -132,16 +131,6 @@ async def threshold(ctx, arg):
 @bot.event
 async def on_ready():
     logger.info('We have logged in as {0.user}'.format(bot))
-
-# @bot.command()
-# @commands.has_permissions([manage_channels=True])
-@bot.event
-async def on_message(message):
-    # Make sure message was not sent by this bot
-    if message.author == bot.user:
-        return
-    
-    await bot.process_commands(message)
 
 @bot.event
 async def on_raw_reaction_add(payload):
