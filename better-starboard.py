@@ -1,5 +1,6 @@
 import os
 import sys
+import emoji
 import logging
 import discord
 from discord.ext import commands
@@ -50,22 +51,21 @@ def createEmbed(message, payload, reaction):
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
     return embedVar
 
-
 ### BOT COMMANDS ###
 @bot.command(
 	help="Use this command to set the starboard channel for this server. Ex: |set <channel> Ex: |set starboard-channel",
 	brief="Use |set <channel> to set the starboard channel for this server."
 )
-async def set(ctx, arg):
+async def set(ctx, channel_name):
     cur = conn.cursor()
 
     guild_id = ctx.guild.id
     guild = bot.get_guild(guild_id)
-    sb_channel_name = arg
+    sb_channel_name = channel_name
 
     # Check if Channel exists in Server
-    is_channel = discord.utils.get(guild.channels, name=sb_channel_name)
-    if not is_channel:
+    channel_exists = discord.utils.get(guild.channels, name=sb_channel_name)
+    if not channel_exists:
         response = f"Channel, {sb_channel_name}, does not exist on this server."
         await ctx.channel.send(f"{response} Please try this command again with a valid channel.")
         logger.info(response)
@@ -99,16 +99,17 @@ async def set(ctx, arg):
         await ctx.channel.send(response)
         logger.info(response)
 
+    cur.close()
+
 @bot.command(
 	help="Use this command to set the reaction threshold for posting messages to your starboard. Default is 5.",
 	brief="Use |threshold <int> to set the number of reactions needed."
 )
-async def threshold(ctx, arg):
+async def threshold(ctx, reaction_count_threshold):
     cur = conn.cursor()
 
     guild_id = ctx.guild.id
     guild = bot.get_guild(guild_id)
-    reaction_count_threshold = arg
     
     # Check if this guild has already set a starboard config
     config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
@@ -127,6 +128,85 @@ async def threshold(ctx, arg):
         await ctx.channel.send(response)
         logger.info(response)
 
+    cur.close()
+
+@bot.command(
+	help=f"Use this command to set channel exceptions for {bot_name}.",
+	brief="Use |ignore <channel_name> to add a channel exception."
+)
+async def ignore_channel(ctx, channel_name):
+    cur = conn.cursor()
+
+    guild_id = ctx.guild.id
+    guild = bot.get_guild(guild_id)
+
+    # Check if Channel exists in Server
+    channel_exists = discord.utils.get(guild.channels, name=channel_name)
+    if not channel_exists:
+        response = f"Channel, {channel_name}, does not exist on this server."
+        await ctx.channel.send(f"{response} Please try this command again with a valid channel.")
+        logger.info(response)
+        return
+    
+    # Check if this guild has already set a starboard config
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        await ctx.channel.send(f"Please configure a {bot_name} channel for this server before setting channel exceptions. Use |set to do so.")
+    else:
+        # Update existing config with new starboard if config present in DB
+        try:
+            cur.execute(f"""
+                INSERT INTO CHANNEL_EXCEPTIONS VALUES (
+                    '{guild_id}{channel_name}',
+                    '{guild_id}',
+                    '{channel_name}'
+                )
+            """)
+            conn.commit()
+            response = f"{channel_name} has been added to this server's {bot_name} channel exceptions."
+            await ctx.channel.send(response)
+            logger.info(response)
+        except sql.IntegrityError:
+            await ctx.channel.send(f'{channel_name} is already being ignored on this server.')
+            logger.info(f'{channel_name} already exists in CHANNEL_EXCEPTIONS for server {guild_id}. Skipping...')
+
+    cur.close()
+
+@bot.command(
+	help=f"Use this command to set reaction exceptions for {bot_name}.",
+	brief="Use |ignore_reaction <emoji> to add a reaction exception."
+)
+async def ignore_reaction(ctx, reaction):
+    cur = conn.cursor()
+
+    guild_id = ctx.guild.id
+    reaction_dem = emoji.demojize(reaction)
+    print(str(reaction))
+    
+    # Check if this guild has already set a starboard config
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        await ctx.channel.send(f"Please configure a {bot_name} channel for this server before setting channel exceptions. Use |set to do so.")
+    else:
+        # Update existing config with new starboard if config present in DB
+        try:
+            cur.execute(f"""
+                INSERT INTO REACTION_EXCEPTIONS VALUES (
+                    '{guild_id}{str(reaction)}',
+                    '{guild_id}',
+                    '{str(reaction)}'
+                )
+            """)
+            conn.commit()
+            response = f"{reaction} has been added to this server's {bot_name} reaction exceptions."
+            await ctx.channel.send(response)
+            logger.info(response)
+        except sql.IntegrityError:
+            await ctx.channel.send(f'{reaction} is already being ignored on this server.')
+            logger.info(f'{reaction} already exists in REACTION_EXCEPTIONS for server {guild_id}. Skipping...')
+
+    cur.close()
+
 ### BOT EVENTS ###
 @bot.event
 async def on_ready():
@@ -139,6 +219,7 @@ async def on_raw_reaction_add(payload):
     guild_id = payload.guild_id
     channel_id = payload.channel_id
     message_id = payload.message_id
+    reaction = str(payload.emoji)
 
     # Get context objects
     guild = bot.get_guild(guild_id)
@@ -149,6 +230,18 @@ async def on_raw_reaction_add(payload):
     cur = conn.cursor()
     cur.row_factory = lambda cursor, row: row[0]
 
+    # Check if channel is being ignored on this server
+    channel_check = cur.execute("SELECT channel_name FROM CHANNEL_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if channel.name in channel_check:
+        logger.info(f'{channel.name} ignored on server {guild_id}. Exiting...')
+        return
+    
+    # Check if reaction is being ignored on this server
+    reaction_check = cur.execute("SELECT reaction FROM REACTION_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if reaction in reaction_check:
+        logger.info(f'{reaction} ignored on server {guild_id}. Exiting...')
+        return
+
     # Check if server has been configured yet. Get starboard channel name if so. Do nothing if not.
     config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
     if len(config_check)==0:
@@ -157,7 +250,7 @@ async def on_raw_reaction_add(payload):
         sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
 
     # Log reaction
-    logger.info(f'{payload.member.name} added the reaction, {payload.emoji} to the message with ID: {payload.message_id} in channel, {bot.get_channel(payload.channel_id)}')
+    logger.info(f'{payload.member.name} added the reaction, {payload.emoji}, to the message with ID, {payload.message_id}, in channel, {bot.get_channel(payload.channel_id)}')
 
     # Get Starboard Channel
     sb_channel = discord.utils.get(guild.channels, name=sb_channel_name)
@@ -173,7 +266,7 @@ async def on_raw_reaction_add(payload):
     for reaction in message.reactions:
 
         if message_id in message_ids:
-            logger.info(f'Message already starred.')
+            logger.info(f'Message, {message_id}, already starred.')
 
             # Update starred message with new reaction count
             if reaction.count >= reaction_count_threshold:

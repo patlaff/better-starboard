@@ -5,6 +5,9 @@ on:
     branches:
       - main
 
+env:
+  FILENAME: better-starboard
+
 jobs:
 
   build:
@@ -26,7 +29,7 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         source: "./"
-        target: "~/programs/better-starboard"
+        target: "~/programs/${{ env.FILENAME }}"
 
     - name: Stop and Restart application on host
       uses: appleboy/ssh-action@master
@@ -36,5 +39,5 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
-          pkill -9 -f better-starboard.py
-          cd /home/pi/programs/better-starboard && /home/pi/programs/better-starboard/venv/bin/python better-starboard.py > /tmp/cronlog.txt 2>&1
+          pkill -9 -f ${{ env.FILENAME }}.py
+          cd /home/pi/programs/${{ env.FILENAME }} && /home/pi/programs/${{ env.FILENAME }}/venv/bin/python ${{ env.FILENAME }}.py > /tmp/cronlog.txt 2>&1
