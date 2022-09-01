@@ -40,4 +40,4 @@ jobs:
         port: ${{ secrets.PORT }}
         script: |
           pkill -9 -f ${{ env.FILENAME }}.py
-          cd ~/programs/${{ env.FILENAME }} && ~/programs/${{ env.FILENAME }}/venv/bin/python ${{ env.FILENAME }}.py > /tmp/cronlog.txt 2>&1
+          cd ~/programs/${{ env.FILENAME }} && ~/programs/${{ env.FILENAME }}/venv/bin/python ${{ env.FILENAME }}.py
