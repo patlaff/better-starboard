@@ -1,6 +1,5 @@
 import os
 import sys
-import emoji
 import logging
 import discord
 from discord.ext import commands
@@ -9,9 +8,18 @@ import sqlite3 as sql
 from dotenv import load_dotenv
 
 ### CONFIG ###
+## Create log folder if not exists ##
 log_folder = "logs"
+log_path = os.path.join(sys.path[0], log_folder)
+# Check whether the specified path exists or not
+log_path_exist = os.path.exists(log_path)
+# Create log path if not exists
+if not log_path_exist:
+  os.makedirs(log_path)
+  print(f"Log path {log_path} not detected, so we created it!")
+# Configure logger
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/bs.log'))
+handler = logging.FileHandler(os.path.join(log_path, 'bs.log'))
 handler.setFormatter(formatter)
 logger = logging.getLogger('bs_logger')
 logger.setLevel(logging.INFO)
