@@ -39,5 +39,5 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
-          docker build --tag ${{ env.FILENAME }} .
+          docker build --tag ${{ env.FILENAME }} ~/programs/${{ env.FILENAME }}/.
           docker stop ${{ env.FILENAME }} || true && docker rm ${{ env.FILENAME }} || true && docker run -d --restart=unless-stopped --name ${{ env.FILENAME }} ${{ env.FILENAME }}:latest
