@@ -39,5 +39,5 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
-          pkill -9 -f ${{ env.FILENAME }}.py
-          cd ~/programs/${{ env.FILENAME }} && ~/programs/${{ env.FILENAME }}/venv/bin/python ${{ env.FILENAME }}.py
+          docker build --tag ${{ env.FILENAME }} .
+          docker stop ${{ env.FILENAME }} || true && docker rm ${{ env.FILENAME }} || true && docker run -d --restart=unless-stopped --name ${{ env.FILENAME }} ${{ env.FILENAME }}:latest
