@@ -1,4 +1,4 @@
-aiohttp
-pynacl
-discord.py==2.0.0 --install-option='--no-dependencies'
+# aiohttp
+# pynacl
+discord.py==2.0.0 #--install-option='--no-dependencies'
 python-dotenv
