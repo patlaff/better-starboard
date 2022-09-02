@@ -21,7 +21,7 @@ jobs:
     - name: Set dotenv vars
       run: echo "BS_TOKEN=${{ secrets.BS_TOKEN }}" >> .env
 
-    - name: Copy project via ssh password
+    - name: Copy Project to Host
       uses: appleboy/scp-action@master
       with:
         host: ${{ secrets.HOST }}
@@ -31,7 +31,7 @@ jobs:
         source: "./"
         target: "~/programs/${{ env.FILENAME }}"
 
-    - name: Stop and Restart application on host
+    - name: Build and Redeploy Docker Container on Host
       uses: appleboy/ssh-action@master
       with:
         host: ${{ secrets.HOST }}

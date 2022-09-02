@@ -237,8 +237,8 @@ async def status(ctx):
         embedVar = discord.Embed(title=f"{guild.name} {bot_name} configuration:", color=0xffffff)
         embedVar.insert_field_at(index=1, name="Better-Starboard Channel", value=sb_channel_name, inline=True)
         embedVar.insert_field_at(index=2, name="Reaction Count Threshold", value=reaction_count_threshold, inline=True)
-        embedVar.insert_field_at(index=3, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
-        embedVar.insert_field_at(index=4, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
+        embedVar.insert_field_at(index=3, name="Channel Exceptions", value='\u200'.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
+        embedVar.insert_field_at(index=4, name="Reaction Exceptions", value='\u200'.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
         await ctx.channel.send(embed=embedVar)
     
     except Exception as e:
