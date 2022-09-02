@@ -5,8 +5,8 @@ import discord
 from discord.ext import commands
 from helpers import createLogDir
 from sqlTables import createTables
-import sqlite3 as sql
 from dotenv import load_dotenv
+import sqlite3 as sql
 
 ### CONFIG ###
 log_path = createLogDir("logs")
@@ -227,19 +227,22 @@ async def status(ctx):
         await ctx.channel.send(response)
         logger.info(response)
         return
-    
-    sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
-    reaction_count_threshold = cur.execute("SELECT reaction_count_threshold FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
-    channel_exceptions = cur.execute("SELECT channel_name FROM CHANNEL_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-    reaction_exceptions = cur.execute("SELECT reaction FROM REACTION_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    try:
+        sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
+        reaction_count_threshold = cur.execute("SELECT reaction_count_threshold FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
+        channel_exceptions = cur.execute("SELECT channel_name FROM CHANNEL_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+        reaction_exceptions = cur.execute("SELECT reaction FROM REACTION_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
 
-    # Create Embed Content
-    embedVar = discord.Embed(title=f"{guild.name} {bot_name} configuration:", color=0xffffff)
-    embedVar.insert_field_at(index=1, name="Better-Starboard Channel", value=sb_channel_name, inline=True)
-    embedVar.insert_field_at(index=2, name="Reaction Count Threshold", value=reaction_count_threshold, inline=True)
-    embedVar.insert_field_at(index=3, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
-    embedVar.insert_field_at(index=4, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
-    await ctx.channel.send(embed=embedVar)
+        # Create Embed Content
+        embedVar = discord.Embed(title=f"{guild.name} {bot_name} configuration:", color=0xffffff)
+        embedVar.insert_field_at(index=1, name="Better-Starboard Channel", value=sb_channel_name, inline=True)
+        embedVar.insert_field_at(index=2, name="Reaction Count Threshold", value=reaction_count_threshold, inline=True)
+        embedVar.insert_field_at(index=3, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
+        embedVar.insert_field_at(index=4, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
+        await ctx.channel.send(embed=embedVar)
+    
+    except Exception as e:
+        await ctx.channel.send(e)
 
     cur.close()
 
