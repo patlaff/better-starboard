@@ -5,11 +5,15 @@ on:
     branches:
       - main
 
+env:
+  FILENAME: better-starboard
+
 jobs:
 
   build:
     name: Deploy
     runs-on: ubuntu-latest
+    environment: prod
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
@@ -25,4 +29,15 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         source: "./"
-        target: "~/programs/better-starboard"
+        target: "~/programs/${{ env.FILENAME }}"
+
+    - name: Stop and Restart application on host
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: |
+          pkill -9 -f ${{ env.FILENAME }}.py
+          cd ~/programs/${{ env.FILENAME }} && ~/programs/${{ env.FILENAME }}/venv/bin/python ${{ env.FILENAME }}.py
