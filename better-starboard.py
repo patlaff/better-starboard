@@ -181,8 +181,7 @@ async def ignore_reaction(ctx, reaction):
     cur = conn.cursor()
 
     guild_id = ctx.guild.id
-    reaction_dem = emoji.demojize(reaction)
-    print(str(reaction))
+    str_reaction = str(reaction)
     
     # Check if this guild has already set a starboard config
     config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
@@ -193,18 +192,54 @@ async def ignore_reaction(ctx, reaction):
         try:
             cur.execute(f"""
                 INSERT INTO REACTION_EXCEPTIONS VALUES (
-                    '{guild_id}{str(reaction)}',
+                    '{guild_id}{str_reaction}',
                     '{guild_id}',
-                    '{str(reaction)}'
+                    '{str_reaction}'
                 )
             """)
             conn.commit()
-            response = f"{reaction} has been added to this server's {bot_name} reaction exceptions."
+            response = f"{str_reaction} has been added to this server's {bot_name} reaction exceptions."
             await ctx.channel.send(response)
             logger.info(response)
         except sql.IntegrityError:
-            await ctx.channel.send(f'{reaction} is already being ignored on this server.')
-            logger.info(f'{reaction} already exists in REACTION_EXCEPTIONS for server {guild_id}. Skipping...')
+            await ctx.channel.send(f'{str_reaction} is already being ignored on this server.')
+            logger.info(f'{str_reaction} already exists in REACTION_EXCEPTIONS for server {guild_id}. Skipping...')
+
+    cur.close()
+
+### BOT COMMANDS ###
+@bot.command(
+	help="Use this command to view this server's current configuration status, including starboard channel, threshold, ignored channels, and ignored reactions.",
+	brief="Use |status to view this server's current configuration."
+)
+async def status(ctx):
+
+    guild_id = ctx.guild.id
+    guild = bot.get_guild(guild_id)
+
+    cur = conn.cursor()
+    cur.row_factory = lambda cursor, row: row[0]
+
+    # Check if this guild has already set a starboard config
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        response = f"No {bot_name} configuration found for this server. Please use |set to get started."
+        await ctx.channel.send(response)
+        logger.info(response)
+        return
+    
+    sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
+    reaction_count_threshold = cur.execute("SELECT reaction_count_threshold FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
+    channel_exceptions = cur.execute("SELECT channel_name FROM CHANNEL_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    reaction_exceptions = cur.execute("SELECT reaction FROM REACTION_EXCEPTIONS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+
+    # Create Embed Content
+    embedVar = discord.Embed(title=f"{guild.name} {bot_name} configuration:", color=0xffffff)
+    embedVar.insert_field_at(index=1, name="Better-Starboard Channel", value=sb_channel_name, inline=True)
+    embedVar.insert_field_at(index=2, name="Reaction Count Threshold", value=reaction_count_threshold, inline=True)
+    embedVar.insert_field_at(index=3, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
+    embedVar.insert_field_at(index=4, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
+    await ctx.channel.send(embed=embedVar)
 
     cur.close()
 
