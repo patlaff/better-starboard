@@ -3,20 +3,13 @@ import sys
 import logging
 import discord
 from discord.ext import commands
+from helpers import createLogDir
 from sqlTables import createTables
 import sqlite3 as sql
 from dotenv import load_dotenv
 
 ### CONFIG ###
-## Create log folder if not exists ##
-log_folder = "logs"
-log_path = os.path.join(sys.path[0], log_folder)
-# Check whether the specified path exists or not
-log_path_exist = os.path.exists(log_path)
-# Create log path if not exists
-if not log_path_exist:
-  os.makedirs(log_path)
-  print(f"Log path {log_path} not detected, so we created it!")
+log_path = createLogDir("logs")
 # Configure logger
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(log_path, 'bs.log'))

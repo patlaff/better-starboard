@@ -2,9 +2,10 @@ import os
 import sys
 import sqlite3 as sql
 import logging
+from helpers import createLogDir
 
 ### CONFIG ###
-log_folder = "logs"
+log_folder = createLogDir("logs")
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/sql.log'))
 handler.setFormatter(formatter)
