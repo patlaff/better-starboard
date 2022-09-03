@@ -6,7 +6,7 @@ on:
       - dev
       - main
     paths:
-      - '.github/workflows/**''
+      - '.github/workflows/**'
       - 'src/**'
       - 'Dockerfile'
 
