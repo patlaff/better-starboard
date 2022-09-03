@@ -14,13 +14,13 @@ logger = logging.getLogger('sql_logger')
 logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
-### CONSTRUCTORS ###
-db_folder = createDir("db")
-conn = sql.connect(f'{db_folder}/sb.db')
-cur = conn.cursor()
-
 ## SQL DB SETUP ###
 def createTables():
+
+    ### CONSTRUCTORS ###
+    db_folder = createDir("db")
+    conn = sql.connect(f'{db_folder}/bs.db')
+    cur = conn.cursor()
     
     ## PINS ##
     # with conn:
@@ -102,3 +102,5 @@ def createTables():
                     reaction TEXT NOT NULL
                 );
             """)
+    
+    return conn

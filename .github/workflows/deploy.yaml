@@ -19,6 +19,7 @@ jobs:
       ENVIRONMENT: prod
       FILENAME: better-starboard
       DEST_DIR: programs 
+      RESTART_POLICY: unless-stopped
     secrets: inherit
   
   dev:
@@ -28,4 +29,5 @@ jobs:
       ENVIRONMENT: dev
       FILENAME: better-starboard-dev
       DEST_DIR: programs
+      RESTART_POLICY: no
     secrets: inherit

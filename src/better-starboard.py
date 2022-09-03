@@ -3,13 +3,13 @@ import sys
 import logging
 import discord
 from discord.ext import commands
-from helpers import createLogDir
+from helpers import createDir
 from sqlTables import createTables
 from dotenv import load_dotenv
 import sqlite3 as sql
 
 ### CONFIG ###
-log_path = createLogDir("logs")
+log_path = createDir("logs")
 # Configure logger
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(log_path, 'bs.log'))
@@ -36,10 +36,8 @@ bot = commands.Bot(
     intents=intents,
     help_command = help_command
 )
-# Create SQL Tables
-createTables()
-# Connect to SQL DB
-conn = sql.connect('sb.db')
+# Create SQL Tables & Connect to DB
+conn = createTables()
 
 ### GLOBAL FUNCTIONS ###
 def createEmbed(message, payload, reaction):

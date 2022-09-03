@@ -9,6 +9,6 @@ def createDir(folder):
     # Create log path if not exists
     if not path_exist:
         os.makedirs(path)
-        print(f"Log path {path} not detected, so we created it!")
+        print(f"Required path {path} not detected, so we created it!")
 
     return path
