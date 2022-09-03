@@ -12,6 +12,9 @@ on:
       DEST_DIR:
         required: true
         type: string
+      RESTART_POLICY:
+        required: true
+        type: string
 
 jobs:
 
