@@ -6,8 +6,9 @@ on:
       - dev
       - main
     paths:
-      - src/**
-      - Dockerfile
+      - '.github/workflows/**''
+      - 'src/**'
+      - 'Dockerfile'
 
 jobs:
 

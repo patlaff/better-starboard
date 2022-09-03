@@ -1,4 +1,4 @@
-name: Deploy Better Starboard - Reusable
+name: Deploy Better-Starboard - Reusable
 
 on:
   workflow_call:
