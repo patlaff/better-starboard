@@ -10,7 +10,7 @@ on:
         required: true
         type: string
       DEST_DIR:
-        required: tru
+        required: true
         type: string
 
 jobs:
