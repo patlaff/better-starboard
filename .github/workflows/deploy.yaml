@@ -7,10 +7,7 @@ on:
       - main
     paths:
       - src/**
-
-env:
-  FILENAME: better-starboard
-  DEST_DIR: programs
+      - Dockerfile
 
 jobs:
 
