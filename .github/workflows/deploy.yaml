@@ -3,41 +3,31 @@ name: Deploy Better-Starboard to Server
 on: 
   push:
     branches:
+      - dev
       - main
+    paths:
+      - src/**
 
 env:
   FILENAME: better-starboard
+  DEST_DIR: programs
 
 jobs:
 
-  build:
-    name: Deploy
-    runs-on: ubuntu-latest
-    environment: prod
-    steps:
-    - name: Checkout Repo
-      uses: actions/checkout@v3
-
-    - name: Set dotenv vars
-      run: echo "BS_TOKEN=${{ secrets.BS_TOKEN }}" >> .env
-
-    - name: Copy Project to Host
-      uses: appleboy/scp-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        source: "./"
-        target: "~/programs/${{ env.FILENAME }}"
-
-    - name: Build and Redeploy Docker Container on Host
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.HOST }}
-        username: ${{ secrets.USERNAME }}
-        password: ${{ secrets.PASSWORD }}
-        port: ${{ secrets.PORT }}
-        script: |
-          docker build --tag ${{ env.FILENAME }} ~/programs/${{ env.FILENAME }}/.
-          docker stop ${{ env.FILENAME }} || true && docker rm ${{ env.FILENAME }} || true && docker run -d --restart=unless-stopped --name ${{ env.FILENAME }} ${{ env.FILENAME }}:latest
+  prod:
+    if: ${{ github.ref == 'refs/heads/main' }}
+    uses: ./.github/workflows/deploy-reusable.yaml
+    with:
+      ENVIRONMENT: prod
+      FILENAME: better-starboard
+      DEST_DIR: programs 
+    secrets: inherit
+  
+  dev:
+    if: ${{ github.ref == 'refs/heads/dev' }}
+    uses: ./.github/workflows/deploy-reusable.yaml
+    with:
+      ENVIRONMENT: dev
+      FILENAME: better-starboard-dev
+      DEST_DIR: programs
+    secrets: inherit

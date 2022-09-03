@@ -2,10 +2,10 @@ import os
 import sys
 import sqlite3 as sql
 import logging
-from helpers import createLogDir
+from helpers import createDir
 
 ### CONFIG ###
-log_folder = createLogDir("logs")
+log_folder = createDir("logs")
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/sql.log'))
 handler.setFormatter(formatter)
@@ -15,7 +15,8 @@ logger.setLevel(logging.INFO)
 logger.addHandler(handler)
 
 ### CONSTRUCTORS ###
-conn = sql.connect('sb.db')
+db_folder = createDir("db")
+conn = sql.connect(f'{db_folder}/sb.db')
 cur = conn.cursor()
 
 ## SQL DB SETUP ###
