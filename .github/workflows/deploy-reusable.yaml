@@ -56,5 +56,5 @@ jobs:
           (docker rm ${{ inputs.FILENAME }} || true) && \
           docker run -d \
             --restart=${{ inputs.RESTART_POLICY }} \
-            --volume ${{ inputs.VOLUME_NAME }}:/src
+            --volume ${{ inputs.VOLUME_NAME }}:/src \
             --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
