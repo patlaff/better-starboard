@@ -3,13 +3,13 @@ import sys
 import logging
 import discord
 from discord.ext import commands
-from helpers import createLogDir
+from helpers import createDir
 from sqlTables import createTables
 from dotenv import load_dotenv
 import sqlite3 as sql
 
 ### CONFIG ###
-log_path = createLogDir("logs")
+log_path = createDir("logs")
 # Configure logger
 formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
 handler = logging.FileHandler(os.path.join(log_path, 'bs.log'))
@@ -26,9 +26,8 @@ default_reaction_count_threshold = 5
 # Load token
 load_dotenv()
 # Create and configure Discord bot
-intents = discord.Intents.all()
-intents.presences = False
-intents.members = False
+intents = discord.Intents.default()
+intents.message_content = True
 help_command = commands.DefaultHelpCommand(
     no_category = 'Commands'
 )
@@ -37,10 +36,8 @@ bot = commands.Bot(
     intents=intents,
     help_command = help_command
 )
-# Create SQL Tables
-createTables()
-# Connect to SQL DB
-conn = sql.connect('sb.db')
+# Create SQL Tables & Connect to DB
+conn = createTables()
 
 ### GLOBAL FUNCTIONS ###
 def createEmbed(message, payload, reaction):
@@ -237,14 +234,15 @@ async def status(ctx):
     embedVar = discord.Embed(title=f"{guild.name} {bot_name} configuration:", color=0xffffff)
     embedVar.insert_field_at(index=1, name="Better-Starboard Channel", value=sb_channel_name, inline=True)
     embedVar.insert_field_at(index=2, name="Reaction Count Threshold", value=reaction_count_threshold, inline=True)
+    embedVar.insert_field_at(index=3, name='\u200b', value='\u200b', inline=False) # Empty field to force a two column result
     if len(channel_exceptions)==0:
-        embedVar.insert_field_at(index=3, name="Channel Exceptions", value='None', inline=False)
+        embedVar.insert_field_at(index=4, name="Channel Exceptions", value='None', inline=True)
     else:
-        embedVar.insert_field_at(index=3, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=False)
+        embedVar.insert_field_at(index=4, name="Channel Exceptions", value=''.join((f"- {i}\n" for i in channel_exceptions)), inline=True)
     if len(reaction_exceptions)==0:
-        embedVar.insert_field_at(index=4, name="Reaction Exceptions", value='None', inline=True)
+        embedVar.insert_field_at(index=5, name="Reaction Exceptions", value='None', inline=True)
     else:
-        embedVar.insert_field_at(index=4, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
+        embedVar.insert_field_at(index=5, name="Reaction Exceptions", value=''.join((f"- {i}\n" for i in reaction_exceptions)), inline=True)
     
     await ctx.channel.send(embed=embedVar)
 
