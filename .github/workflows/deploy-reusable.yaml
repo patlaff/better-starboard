@@ -12,6 +12,9 @@ on:
       DEST_DIR:
         required: true
         type: string
+      VOLUME_NAME:
+        required: true
+        type: string
       RESTART_POLICY:
         required: true
         type: string
@@ -47,5 +50,11 @@ jobs:
         password: ${{ secrets.PASSWORD }}
         port: ${{ secrets.PORT }}
         script: |
+          docker volume inspect ${{ inputs.VOLUME_NAME }} || docker volume create ${{ inputs.VOLUME_NAME }}
           docker build --tag ${{ inputs.FILENAME }} ~/${{ inputs.DEST_DIR }}/${{ inputs.FILENAME }}/.
-          docker stop ${{ inputs.FILENAME }} || true && docker rm ${{ inputs.FILENAME }} || true && docker run -d --restart=${{ inputs.RESTART_POLICY }} --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
+          (docker stop ${{ inputs.FILENAME }} || true) && \
+          (docker rm ${{ inputs.FILENAME }} || true) && \
+          docker run -d \
+            --restart=${{ inputs.RESTART_POLICY }} \
+            --volume ${{ inputs.VOLUME_NAME }}:/src
+            --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
