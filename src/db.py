@@ -1,25 +1,13 @@
-import os
-import sys
 import sqlite3 as sql
-import logging
-from helpers import createDir
+from modules.helpers import createLogger, conn
 
 ### CONFIG ###
-log_folder = createDir("logs")
-formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
-handler = logging.FileHandler(os.path.join(sys.path[0], f'{log_folder}/sql.log'))
-handler.setFormatter(formatter)
-
-logger = logging.getLogger('sql_logger')
-logger.setLevel(logging.INFO)
-logger.addHandler(handler)
+logger = createLogger('sql')
 
 ## SQL DB SETUP ###
 def createTables():
 
     ### CONSTRUCTORS ###
-    db_folder = createDir("db")
-    conn = sql.connect(f'{db_folder}/bs.db')
     cur = conn.cursor()
     
     ## PINS ##
@@ -34,7 +22,7 @@ def createTables():
     else:
         logger.info('Table does not exist. Creating table, PINS...')
         with conn:
-            conn.execute("""
+            cur.execute("""
                 CREATE TABLE PINS (
                     sb_message_id INTEGER NOT NULL PRIMARY KEY,
                     guild_id INTEGER NOT NULL,
@@ -55,7 +43,7 @@ def createTables():
     else:
         logger.info('Table does not exist. Creating table, CONFIGS...')
         with conn:
-            conn.execute("""
+            cur.execute("""
                 CREATE TABLE CONFIGS (
                     guild_id INTEGER NOT NULL PRIMARY KEY,
                     sb_channel_name TEXT NOT NULL,
@@ -75,7 +63,7 @@ def createTables():
     else:
         logger.info('Table does not exist. Creating table, CHANNEL_EXCEPTIONS...')
         with conn:
-            conn.execute("""
+            cur.execute("""
                 CREATE TABLE CHANNEL_EXCEPTIONS (
                     id TEXT NOT NULL PRIMARY KEY,
                     guild_id INTEGER NOT NULL,
@@ -95,7 +83,7 @@ def createTables():
     else:
         logger.info('Table does not exist. Creating table, REACTION_EXCEPTIONS...')
         with conn:
-            conn.execute("""
+            cur.execute("""
                 CREATE TABLE REACTION_EXCEPTIONS (
                     id TEXT NOT NULL PRIMARY KEY,
                     guild_id INTEGER NOT NULL,
@@ -103,4 +91,4 @@ def createTables():
                 );
             """)
     
-    return conn
+    cur.close()
