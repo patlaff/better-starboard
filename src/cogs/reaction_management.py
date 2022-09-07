@@ -1,11 +1,11 @@
 from discord.ext import commands
-from modules import vars
-from modules.helpers import createLogger, conn
+from helpers import vars
+from helpers.helpers import createLogger, conn
 import sqlite3 as sql
 
-logger = createLogger('ignore_reaction')
+logger = createLogger('reactions')
 
-class IgReactionCog(commands.Cog):
+class ReactionManagement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -44,4 +44,4 @@ class IgReactionCog(commands.Cog):
         cur.close()
     
 async def setup(bot):
-    await bot.add_cog(IgReactionCog(bot))
+    await bot.add_cog(ReactionManagement(bot))

@@ -14,7 +14,6 @@ def createDir(folder):
     if not path_exist:
         os.makedirs(path)
         print(f"Required path {path} not detected, so we created it!")
-
     return path
 
 def createLogger(logger_name):
@@ -41,12 +40,12 @@ def createBot():
     intents = discord.Intents.default()
     intents.message_content = True
     help_command = commands.DefaultHelpCommand(
-        no_category = 'Commands'
+        no_category = 'General'
     )
     bot = commands.Bot(
         command_prefix="|",
         intents=intents,
-        help_command = help_command
+        help_command=help_command
     )
     return bot
 

@@ -1,8 +1,8 @@
 import sqlite3 as sql
-from modules.helpers import createLogger, conn
+from helpers.helpers import createLogger, conn
 
 ### CONFIG ###
-logger = createLogger('sql')
+logger = createLogger('db')
 
 ## SQL DB SETUP ###
 def createTables():
