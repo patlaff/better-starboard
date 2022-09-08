@@ -5,7 +5,15 @@ import discord
 from discord.ext import commands
 import sqlite3 as sql
 
-def createDir(folder):
+def createDir(path):
+    # Check whether the specified path exists or not
+    path_exist = os.path.exists(path)
+    # Create log path if not exists
+    if not path_exist:
+        os.makedirs(path)
+        print(f"Required path {path} not detected, so we created it!")
+
+def createChildDir(folder):
     ## Create log folder if not exists ##
     path = os.path.join(sys.path[0], folder)
     # Check whether the specified path exists or not
@@ -18,7 +26,7 @@ def createDir(folder):
 
 def createLogger(logger_name):
     # Configure logger
-    log_path = createDir("logs")
+    log_path = createChildDir("logs")
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(os.path.join(log_path, f'{logger_name}.log'))
     handler.setFormatter(formatter)
@@ -27,10 +35,10 @@ def createLogger(logger_name):
     logger.addHandler(handler)
     return logger
 
-def createDbConn(folder_name='db', db_name='bs'):
-    ### CONSTRUCTORS ###
-    db_folder = createDir(folder_name)
-    conn = sql.connect(f'{db_folder}/{db_name}.db')
+def createDbConn(folder_name='/var/db', db_name='bs'):
+    # folder_name should map to volume mount location in docker run command
+    createDir(folder_name)
+    conn = sql.connect(f'{folder_name}/{db_name}.db')
     return conn
 
 conn = createDbConn()
