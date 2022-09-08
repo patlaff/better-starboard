@@ -1,12 +1,12 @@
 import discord
 from discord.ext import commands
-from modules import vars
-from modules.helpers import createLogger, conn, bot
+from helpers import vars
+from helpers.helpers import createLogger, conn, bot
 import sqlite3 as sql
 
-logger = createLogger('ignore_channel')
+logger = createLogger('channels')
 
-class IgChannelCog(commands.Cog):
+class ChannelManagement(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -53,4 +53,4 @@ class IgChannelCog(commands.Cog):
         cur.close()
 
 async def setup(bot):
-    await bot.add_cog(IgChannelCog(bot))
+    await bot.add_cog(ChannelManagement(bot))

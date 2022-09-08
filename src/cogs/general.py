@@ -1,11 +1,11 @@
 import discord
 from discord.ext import commands
-from modules import vars
-from modules.helpers import createLogger, conn, bot
+from helpers import vars
+from helpers.helpers import createLogger, conn, bot
 
-logger = createLogger('status')
+logger = createLogger('bs')
 
-class StatusCog(commands.Cog):
+class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -53,4 +53,4 @@ class StatusCog(commands.Cog):
         cur.close()
 
 async def setup(bot):
-    await bot.add_cog(StatusCog(bot))
+    await bot.add_cog(General(bot))

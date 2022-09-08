@@ -1,13 +1,23 @@
 import discord
 from discord.ext import commands
-from modules import vars
-from modules.helpers import createLogger, createEmbed, conn, bot
+from helpers import vars
+from helpers.helpers import createLogger, createEmbed, conn, bot
+from helpers.db import createTables
 
-logger = createLogger('reactions')
+logger = createLogger('bs')
 
-class ReactionCog(commands.Cog):
+class Events(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+    
+    @commands.Cog.listener()
+    async def on_ready(self):
+        response = f'We have logged in as {bot.user}'
+        logger.info(response)
+        print(response)
+
+        # Create SQL Tables & Connect to DB
+        createTables()
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
@@ -96,4 +106,4 @@ class ReactionCog(commands.Cog):
         cur.close()
 
 async def setup(bot):
-    await bot.add_cog(ReactionCog(bot))
+    await bot.add_cog(Events(bot))

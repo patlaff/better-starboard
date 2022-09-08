@@ -1,20 +1,13 @@
 import os
 import asyncio
-from modules.helpers import bot
+from helpers.helpers import bot
 from dotenv import load_dotenv
 
 async def load_extensions():
 
-    # Load Events
-    await bot.load_extension("modules.on_ready")
-    await bot.load_extension("modules.on_reaction")
-    
-    # Load Commands
-    await bot.load_extension("modules.set")
-    await bot.load_extension("modules.threshold")
-    await bot.load_extension("modules.ignore_channel")
-    await bot.load_extension("modules.ignore_reaction")
-    await bot.load_extension("modules.status")
+    for filename in os.listdir('./cogs'):
+        if filename.endswith('.py'):
+            await bot.load_extension(f'cogs.{filename[:-3]}')
 
 
 async def main():
