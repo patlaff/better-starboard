@@ -8,7 +8,7 @@ import sqlite3 as sql
 def createDir(path):
     # Check whether the specified path exists or not
     path_exist = os.path.exists(path)
-    # Create log path if not exists
+    # Create path if not exists
     if not path_exist:
         os.makedirs(path)
         print(f"Required path {path} not detected, so we created it!")
@@ -24,9 +24,9 @@ def createChildDir(folder):
         print(f"Required path {path} not detected, so we created it!")
     return path
 
-def createLogger(logger_name):
+def createLogger(logger_name, folder_name='/bs/logs'):
     # Configure logger
-    log_path = createChildDir("logs")
+    log_path = createDir(folder_name)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(os.path.join(log_path, f'{logger_name}.log'))
     handler.setFormatter(formatter)
@@ -35,7 +35,7 @@ def createLogger(logger_name):
     logger.addHandler(handler)
     return logger
 
-def createDbConn(folder_name='/var/db', db_name='bs'):
+def createDbConn(folder_name='/bs/db', db_name='bs'):
     # folder_name should map to volume mount location in docker run command
     createDir(folder_name)
     conn = sql.connect(f'{folder_name}/{db_name}.db')
