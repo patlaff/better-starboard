@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import helpers.vars as vars
-from helpers.helpers import createLogger, conn
+from helpers.helpers import createLogger, checkServerConfig, conn
 
 logger = createLogger('config')
 
@@ -9,6 +9,7 @@ class Config(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    ### SET ###
     @commands.command(
         help="Use this command to set the starboard channel for this server. Ex: |set <channel> Ex: |set starboard-channel",
 	    brief="Use |set <channel> to set the starboard channel for this server."
@@ -32,13 +33,12 @@ class Config(commands.Cog):
         config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
         if len(config_check)==0:
             # Insert initial config with default reaction_count_threshold if no config present in DB
-            cur.execute(f"""
-                INSERT INTO CONFIGS VALUES (
-                    '{guild_id}',
-                    '{sb_channel_name}',
-                    '{vars.default_reaction_count_threshold}'
+            cur.execute(f"INSERT INTO CONFIGS VALUES (?, ?, ?)", (
+                guild_id,
+                sb_channel_name,
+                vars.default_reaction_count_threshold
                 )
-            """)
+            )
             conn.commit()
             response = f"Channel, {sb_channel_name}, has been added as this server's {vars.bot_name}. Default reaction threshold was set to {vars.default_reaction_count_threshold}. Use |threshold to set a custom threshold."
             await ctx.channel.send(response)
@@ -47,10 +47,9 @@ class Config(commands.Cog):
             # Update existing config with new starboard if config present in DB
             cur.execute(f"""
                 UPDATE CONFIGS
-                SET sb_channel_name = "{sb_channel_name}"
-                WHERE
-                    guild_id=:guild_id
-            """, {"guild_id": guild_id})
+                SET sb_channel_name=:sb_channel_name
+                WHERE guild_id=:guild_id
+            """, {"guild_id": guild_id, "sb_channel_name": sb_channel_name})
             conn.commit()
             response = f"Channel, {sb_channel_name}, has been updated as this server's {vars.bot_name}."
             await ctx.channel.send(response)
@@ -58,6 +57,7 @@ class Config(commands.Cog):
 
         cur.close()
 
+    ### THRESHOLD ###
     @commands.command(
         help="Use this command to set the reaction threshold for posting messages to your starboard. Default is 5.",
         brief="Use |threshold <int> to set the number of reactions needed."
@@ -68,17 +68,17 @@ class Config(commands.Cog):
         guild_id = ctx.guild.id
         
         # Check if this guild has already set a starboard config
-        config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-        if len(config_check)==0:
-            await ctx.channel.send(f"Please configure a {vars.bot_name} channel for this server before setting a custom reaction count threshold. Use |set to do so.")
+        server_configured = await checkServerConfig(ctx, logger, guild_id)
+        if not server_configured:
+            cur.close()
+            return
         else:
             # Update existing config with new starboard if config present in DB
             cur.execute(f"""
                 UPDATE CONFIGS
-                SET reaction_count_threshold = {reaction_count_threshold}
-                WHERE
-                    guild_id=:guild_id
-            """, {"guild_id": guild_id})
+                SET reaction_count_threshold=:reaction_count_threshold
+                WHERE guild_id=:guild_id
+            """, {"guild_id": guild_id, "reaction_count_threshold": reaction_count_threshold})
             conn.commit()
             response = f"A new reaction count threshold of {reaction_count_threshold} has been updated for this server's {vars.bot_name}."
             await ctx.channel.send(response)

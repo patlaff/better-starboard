@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
 import helpers.vars as vars
-from helpers.helpers import createLogger, conn, bot
+from helpers.helpers import createLogger, checkServerConfig, conn, bot
 
 logger = createLogger('bs')
 
@@ -9,6 +9,7 @@ class General(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
+    ### STATUS ###
     @commands.command(
         help="Use this command to view this server's current configuration status, including starboard channel, threshold, ignored channels, and ignored reactions.",
         brief="Use |status to view this server's current configuration."
@@ -22,11 +23,9 @@ class General(commands.Cog):
         cur.row_factory = lambda cursor, row: row[0]
 
         # Check if this guild has already set a starboard config
-        config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-        if len(config_check)==0:
-            response = f"No {vars.bot_name} configuration found for this server. Please use |set to get started."
-            await ctx.channel.send(response)
-            logger.info(response)
+        server_configured = await checkServerConfig(ctx, logger, guild_id)
+        if not server_configured:
+            cur.close()
             return
 
         sb_channel_name = cur.execute("SELECT sb_channel_name FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchone()
