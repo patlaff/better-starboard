@@ -68,7 +68,6 @@ class Events(commands.Cog):
 
         # Get all starred messages in Starboard Channel from DB
         message_ids = cur.execute("SELECT message_id FROM PINS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
-        #logger.info(f"Starred Messages: {message_ids}")
 
         for reaction in message.reactions:
 
@@ -80,10 +79,8 @@ class Events(commands.Cog):
                     logger.info(f'Updating reaction count for message, {message_id} to {reaction.count}...')
                     starred_id = cur.execute("SELECT sb_message_id FROM PINS WHERE message_id=:message_id", {"message_id": message_id}).fetchone()
                     starred_message = await sb_channel.fetch_message(starred_id)
-
                     embedVar = createEmbed(message, payload, reaction)
                     await starred_message.edit(embed=embedVar)
-
                     return
 
             if reaction.count >= reaction_count_threshold:
@@ -93,17 +90,21 @@ class Events(commands.Cog):
                 embedVar = createEmbed(message, payload, reaction)
                 starred_message = await channel.send(embed=embedVar)
 
-                cur.execute(f"""
-                    INSERT INTO PINS VALUES (
-                        '{starred_message.id}',
-                        '{guild_id}',
-                        '{channel_id}',
-                        '{message_id}'
+                cur.execute(f"INSERT INTO PINS VALUES (?, ?, ?, ?)", (
+                        starred_message.id,
+                        guild_id,
+                        channel_id,
+                        message_id
                     )
-                """)
+                )
                 conn.commit()
         
         cur.close()
+    
+    ### I'm thinking this is not desired functionality at this point ###
+    # @commands.Cog.listener()
+    # async def on_raw_reaction_remove(self, payload):
+    #     return
 
 async def setup(bot):
     await bot.add_cog(Events(bot))

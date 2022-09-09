@@ -34,6 +34,15 @@ jobs:
 
     - name: Set dotenv vars
       run: echo "BS_TOKEN=${{ secrets.BS_TOKEN }}" >> ./src/.env
+    
+    - name: Remove Existing Project Files
+      uses: appleboy/ssh-action@master
+      with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USERNAME }}
+        password: ${{ secrets.PASSWORD }}
+        port: ${{ secrets.PORT }}
+        script: rm -r ~/${{ inputs.DEST_DIR }}/${{ inputs.FILENAME }}
 
     - name: Copy Project to Host
       uses: appleboy/scp-action@master
@@ -61,5 +70,3 @@ jobs:
             --volume ${{ inputs.DB_VOLUME }}:/bs/db \
             --volume ${{ inputs.LOG_VOLUME }}:/bs/logs \
             --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
-        
-        # docker volume inspect ${{ inputs.VOLUME_NAME }} || docker volume create ${{ inputs.VOLUME_NAME }}

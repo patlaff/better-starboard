@@ -1,4 +1,3 @@
-import sqlite3 as sql
 from helpers.helpers import createLogger, conn
 
 ### CONFIG ###

@@ -25,7 +25,7 @@ def createChildDir(folder):
         print(f"Required path {path} not detected, so we created it!")
     return path
 
-def createLogger(logger_name, folder_name='/bs/logs'):
+def createLogger(logger_name, folder_name='logs'):
     # Configure logger
     if folder_name[:1] == '/':
         log_path = createDir(folder_name)
@@ -39,7 +39,7 @@ def createLogger(logger_name, folder_name='/bs/logs'):
     logger.addHandler(handler)
     return logger
 
-def createDbConn(db_name='bs', folder_name='/bs/db'):
+def createDbConn(db_name='bs', folder_name='db'):
     # folder_name should map to volume mount location in docker run command
     if folder_name[:1] == '/':
         db_path = createDir(folder_name)
@@ -75,3 +75,14 @@ def createEmbed(message, payload, reaction):
     embedVar.insert_field_at(index=2, name="Channel", value=message.channel.name, inline=True)
     embedVar.insert_field_at(index=3, name="Reaction", value=f"{payload.emoji}({reaction.count})")
     return embedVar
+
+async def checkServerConfig(ctx, logger, guild_id):
+    cur = conn.cursor()
+    config_check = cur.execute("SELECT guild_id FROM CONFIGS WHERE guild_id=:guild_id", {"guild_id": guild_id}).fetchall()
+    if len(config_check)==0:
+        response = f"Please configure a {vars.bot_name} channel for this server before setting additional configurations. Use |set to do so."
+        logger.info(response)
+        await ctx.channel.send(response)
+        return None
+    else:
+        return 1
