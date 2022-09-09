@@ -1,5 +1,5 @@
 import sqlite3 as sql
-from helpers.helpers import createLogger, conn
+from helpers import createLogger, conn
 
 ### CONFIG ###
 logger = createLogger('db')

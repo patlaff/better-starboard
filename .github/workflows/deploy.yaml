@@ -19,7 +19,8 @@ jobs:
       ENVIRONMENT: prod
       FILENAME: better-starboard
       DEST_DIR: programs 
-      VOLUME_NAME: bsdb
+      DB_VOLUME: bsdb
+      LOG_VOLUME: bslogs
       RESTART_POLICY: unless-stopped
     secrets: inherit
   
@@ -30,6 +31,7 @@ jobs:
       ENVIRONMENT: dev
       FILENAME: better-starboard-dev
       DEST_DIR: programs
-      VOLUME_NAME: bsdb-dev
+      DB_VOLUME: bsdb-dev
+      LOG_VOLUME: bslogs-dev
       RESTART_POLICY: no
     secrets: inherit

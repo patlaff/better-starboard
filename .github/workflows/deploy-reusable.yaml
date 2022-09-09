@@ -12,7 +12,10 @@ on:
       DEST_DIR:
         required: true
         type: string
-      VOLUME_NAME:
+      DB_VOLUME:
+        required: true
+        type: string
+      LOG_VOLUME:
         required: true
         type: string
       RESTART_POLICY:
@@ -55,7 +58,8 @@ jobs:
           (docker rm ${{ inputs.FILENAME }} || true) && \
           docker run -d \
             --restart=${{ inputs.RESTART_POLICY }} \
-            --volume ${{ inputs.VOLUME_NAME }}:/bs \
+            --volume ${{ inputs.DB_VOLUME }}:/bs/db \
+            --volume ${{ inputs.LOG_VOLUME }}:/bs/logs \
             --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
         
         # docker volume inspect ${{ inputs.VOLUME_NAME }} || docker volume create ${{ inputs.VOLUME_NAME }}

@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-from helpers import vars
-from helpers.helpers import createLogger, conn, bot
+import vars
+from helpers import createLogger, conn, bot
 import sqlite3 as sql
 
 logger = createLogger('channels')

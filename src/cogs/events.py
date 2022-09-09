@@ -1,8 +1,8 @@
 import discord
 from discord.ext import commands
-from helpers import vars
-from helpers.helpers import createLogger, createEmbed, conn, bot
-from helpers.db import createTables
+import vars
+from helpers import createLogger, createEmbed, conn, bot
+from db import createTables
 
 logger = createLogger('bs')
 
