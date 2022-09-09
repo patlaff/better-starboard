@@ -1,6 +1,6 @@
 from discord.ext import commands
-import vars
-from helpers import createLogger, conn
+import helpers.vars as vars
+from helpers.helpers import createLogger, conn
 import sqlite3 as sql
 
 logger = createLogger('reactions')

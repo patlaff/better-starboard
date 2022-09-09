@@ -1,6 +1,6 @@
 import os
 import asyncio
-from helpers import bot
+from helpers.helpers import bot
 from dotenv import load_dotenv
 
 async def load_extensions():

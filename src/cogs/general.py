@@ -1,7 +1,7 @@
 import discord
 from discord.ext import commands
-import vars
-from helpers import createLogger, conn, bot
+import helpers.vars as vars
+from helpers.helpers import createLogger, conn, bot
 
 logger = createLogger('bs')
 
