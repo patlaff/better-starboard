@@ -10,6 +10,10 @@ class ReactionManagement(commands.Cog):
         self.bot = bot
 
     ### IGNORE REACTION ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help=f"Use this command to set reaction exceptions for {vars.bot_name}.",
         brief="Use |ignore_reaction <emoji> to add a reaction exception."
@@ -45,6 +49,10 @@ class ReactionManagement(commands.Cog):
         cur.close()
     
     ### ADD REACTION ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help=f"Use this command to remove a reaction exception for {vars.bot_name}.",
         brief="Use |add_reaction <emoji> to remove a reaction exception."

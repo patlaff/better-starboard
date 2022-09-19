@@ -12,7 +12,7 @@ class Events(commands.Cog):
     
     @commands.Cog.listener()
     async def on_ready(self):
-        response = f'We have logged in as {bot.user}'
+        response = f'We have logged in as {bot.user}. Bot currently installed in {len(bot.guilds)} servers.'
         logger.info(response)
         print(response)
 

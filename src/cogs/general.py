@@ -10,6 +10,10 @@ class General(commands.Cog):
         self.bot = bot
 
     ### STATUS ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help="Use this command to view this server's current configuration status, including starboard channel, threshold, ignored channels, and ignored reactions.",
         brief="Use |status to view this server's current configuration."

@@ -11,6 +11,10 @@ class ChannelManagement(commands.Cog):
         self.bot = bot
 
     ### IGNORE CHANNEL ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help=f"Use this command to set channel exceptions for {vars.bot_name}.",
         brief="Use |ignore_channel <channel_name> to add a channel exception."
@@ -54,6 +58,10 @@ class ChannelManagement(commands.Cog):
         cur.close()
     
     ### ADD CHANNEL ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help=f"Use this command to remove a channel exception for {vars.bot_name}.",
         brief="Use |add_channel <channel_name> to remove a channel exception."

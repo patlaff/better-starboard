@@ -25,7 +25,7 @@ def createChildDir(folder):
         print(f"Required path {path} not detected, so we created it!")
     return path
 
-def createLogger(logger_name, folder_name='logs'):
+def createLogger(logger_name, folder_name='/bs/logs'):
     # Configure logger
     if folder_name[:1] == '/':
         log_path = createDir(folder_name)
@@ -39,7 +39,7 @@ def createLogger(logger_name, folder_name='logs'):
     logger.addHandler(handler)
     return logger
 
-def createDbConn(db_name='bs', folder_name='db'):
+def createDbConn(db_name='bs', folder_name='/bs/db'):
     # folder_name should map to volume mount location in docker run command
     if folder_name[:1] == '/':
         db_path = createDir(folder_name)
