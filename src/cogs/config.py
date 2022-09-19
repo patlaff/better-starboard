@@ -10,9 +10,13 @@ class Config(commands.Cog):
         self.bot = bot
 
     ### SET ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help="Use this command to set the starboard channel for this server. Ex: |set <channel> Ex: |set starboard-channel",
-	    brief="Use |set <channel> to set the starboard channel for this server."
+	    brief="Use |set <channel_name> to set the starboard channel for this server."
     )
     async def set(self, ctx, channel_name):
         cur = conn.cursor()
@@ -58,6 +62,10 @@ class Config(commands.Cog):
         cur.close()
 
     ### THRESHOLD ###
+    @commands.has_permissions(
+        manage_channels=True,
+        manage_messages=True
+    )
     @commands.command(
         help="Use this command to set the reaction threshold for posting messages to your starboard. Default is 5.",
         brief="Use |threshold <int> to set the number of reactions needed."
