@@ -33,6 +33,10 @@ class Events(commands.Cog):
         channel = guild.get_channel(channel_id)
         message = await channel.fetch_message(message_id)
 
+        # Ignore reaction if message is posted by bot. In other words, if this is a starboard message.
+        if message.author == bot.user:
+            return
+
         # Open DB Cursor
         cur = conn.cursor()
         cur.row_factory = lambda cursor, row: row[0]
