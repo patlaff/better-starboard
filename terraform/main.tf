@@ -125,7 +125,7 @@ resource "azurerm_container_app" "this" {
     identity_ids = [azurerm_user_assigned_identity.this.id]
   }
   secret {
-    name  = "BS_TOKEN"
+    name  = "bs-token"
     value = data.azurerm_key_vault_secret.this["BS-TOKEN"].value
   }
   # ingress {
@@ -153,7 +153,7 @@ resource "azurerm_container_app" "this" {
       }
       env {
         name  = "BS_TOKEN"
-        secret_name = "BS_TOKEN"
+        secret_name = "bs-token"
       }
       readiness_probe {
         transport = "HTTP"
