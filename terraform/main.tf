@@ -43,13 +43,13 @@ resource "azurerm_key_vault" "this" {
 
 resource "azurerm_role_assignment" "TF_KV_Secrets_Reader" {
   scope                = azurerm_key_vault.this.id
-  role_definition_name = "Key Vault Secrets Reader"
+  role_definition_name = "Key Vault Secrets User"
   principal_id         = data.azurerm_client_config.current.object_id
 }
 
 resource "azurerm_role_assignment" "CA_KV_Secrets_Reader" {
   scope                = azurerm_key_vault.this.id
-  role_definition_name = "Key Vault Secrets Reader"
+  role_definition_name = "Key Vault Secrets User"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
