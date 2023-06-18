@@ -104,13 +104,25 @@ jobs:
         run: terraform validate
 
       - name: Terraform Plan Apply
-        id: plan-apply
+        id: plan-apply-kv
+        working-directory: ${{ env.WORKING_DIR }}
+        if: inputs.TF_ACTION == 'plan'
+        run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this"
+      
+      - name: Terraform Plan Apply
+        id: plan-apply-rest
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'plan'
         run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars
 
       - name: Terraform Apply
-        id: apply
+        id: apply-kv
+        working-directory: ${{ env.WORKING_DIR }}
+        if: inputs.TF_ACTION == 'apply'
+        run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this"
+      
+      - name: Terraform Apply
+        id: apply-rest
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'apply'
         run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars 
