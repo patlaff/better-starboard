@@ -20,6 +20,7 @@ on:
 #         description: 'The action terraform should apply'
 #         type: choice
 #         options:
+#           - none
 #           - plan
 #           - apply
 #           - plan-destroy
@@ -49,6 +50,6 @@ jobs:
     if: ${{ inputs.tf_action != 'none' }}
     uses: ./.github/workflows/terraform.yaml
     with:
-      ENVIRONEMNT: ${{ inputs.ENVIRONMENT }}
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       TF_ACTION: ${{ inputs.TF_ACTION }}
     secrets: inherit
