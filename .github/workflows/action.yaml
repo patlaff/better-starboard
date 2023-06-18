@@ -1,36 +1,36 @@
 name: Deploy Better-Starboard to Azure
 
-on: 
-  push
+# on: 
+#   push
 
-# on:
-#   workflow_dispatch:
-#     inputs:
-#       ENVIRONMENT:
-#         description: 'Environment to run deployments against'
-#         type: environment
-#         required: true
-#         default: 'dev'
-#       BUILD_CONTAINER:
-#         descripotion: 'Should the docker container be rebuilt?'
-#         type: boolean
-#         required: true
-#         default: true
-#       TF_ACTION:
-#         description: 'The action terraform should apply'
-#         type: choice
-#         options:
-#           - none
-#           - plan
-#           - apply
-#           - plan-destroy
-#           - destroy
-#         required: true
-#         default: 'plan'
-#     # paths:
-#     #   - '.github/workflows/**'
-#     #   - 'src/**'
-#     #   - 'Dockerfile'
+on:
+  workflow_dispatch:
+    inputs:
+      ENVIRONMENT:
+        description: 'Environment to run deployments against'
+        type: environment
+        required: true
+        default: 'dev'
+      BUILD_CONTAINER:
+        description: 'Should the docker container be rebuilt?'
+        type: boolean
+        required: true
+        default: true
+      TF_ACTION:
+        description: 'The action terraform should apply'
+        type: choice
+        options:
+          - none
+          - plan
+          - apply
+          - plan-destroy
+          - destroy
+        required: true
+        default: 'plan'
+    # paths:
+    #   - '.github/workflows/**'
+    #   - 'src/**'
+    #   - 'Dockerfile'
 
 jobs:
 
