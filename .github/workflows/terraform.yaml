@@ -107,7 +107,7 @@ jobs:
         id: plan-apply-kv
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'plan'
-        run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
+        run: terraform plan -var="image_tag=${{ inputs.DOCKER_TAGS }}" -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
       
       # - name: Terraform Plan Apply
       #   id: plan-apply-rest
@@ -119,25 +119,25 @@ jobs:
         id: apply-kv
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'apply'
-        run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
+        run: terraform apply -auto-approve -var="image_tag=${{ inputs.DOCKER_TAGS }}" -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
       
       - name: Terraform Apply Rest
         id: apply-rest
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'apply'
-        run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars 
+        run: terraform apply -auto-approve -var="image_tag=${{ inputs.DOCKER_TAGS }}" -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars 
 
       - name: Terraform Plan Destroy
         id: plan-destroy
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'plan-destroy'
-        run: terraform plan -destroy -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars
+        run: terraform plan -destroy -var="image_tag=${{ inputs.DOCKER_TAGS }}" -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars
 
       - name: Terraform Destroy
         id: destroy
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'destroy'
-        run: terraform destroy -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars 
+        run: terraform destroy -auto-approve -var="image_tag=${{ inputs.DOCKER_TAGS }}" -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars 
 
       # - name: Capture Terraform Outputs
       #   id: outputs

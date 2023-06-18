@@ -54,4 +54,5 @@ jobs:
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
       TF_ACTION: ${{ inputs.TF_ACTION }}
+      DOCKER_TAGS: ${{ needs.build.outputs.DOCKER_TAGS }}
     secrets: inherit

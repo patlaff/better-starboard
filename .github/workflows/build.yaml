@@ -56,6 +56,12 @@ jobs:
         tags: ${{ steps.meta.outputs.tags }}
         labels: ${{ steps.meta.outputs.labels }}
 
+    - name: Capture Outputs
+      id: outputs
+      run: |
+        echo "DOCKER_TAGS=${{ steps.meta.outputs.tags }}"" >> $GITHUB_OUTPUT
+        echo "DOCKER_LABLES=${{ steps.meta.outputs.labels }}" >> $GITHUB_OUTPUT
+
   # - name:
   #   run: |
   #     docker build --tag ${{ inputs.FILENAME }} ~/${{ inputs.DEST_DIR }}/${{ inputs.FILENAME }}/.

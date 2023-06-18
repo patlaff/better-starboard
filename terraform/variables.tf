@@ -8,3 +8,8 @@ variable "network" {
     subnet_size   = number
   })
 }
+
+variable "image_tag" {
+  type = string
+  default = "latest"
+}
