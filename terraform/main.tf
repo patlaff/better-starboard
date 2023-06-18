@@ -62,7 +62,7 @@ resource "azurerm_container_app_environment" "this" {
   tags = local.common_tags
 }
 
-resource "azurerm_storage_account" "bsdb" {
+resource "azurerm_storage_account" "this" {
   name                     = replace(format("%s-%s-%s", local.common_name, var.env, "stg"), "-", "")
   resource_group_name      = azurerm_resource_group.this.name
   location                 = azurerm_resource_group.this.location
