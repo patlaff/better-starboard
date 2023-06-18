@@ -139,8 +139,8 @@ resource "azurerm_container_app" "this" {
     min_replicas = 1
     max_replicas = 1
     container {
-      name   = "valheim"
-      image  = "lloesche/valheim-server"
+      name   = "better-starboard"
+      image  = "patlaff/better-starboard"
       cpu    = 0.5
       memory = "1Gi"
       volume_mounts {
