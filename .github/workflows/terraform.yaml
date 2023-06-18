@@ -10,6 +10,9 @@ on:
       TF_ACTION:
         required: true
         type: string
+      DOCKER_TAGS:
+        required: false
+        type: string
 
 permissions:
   id-token: write
