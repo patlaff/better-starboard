@@ -45,10 +45,11 @@ jobs:
       LOG_VOLUME: bslogs
       RESTART_POLICY: unless-stopped
     secrets: inherit
+
   
   terraform:
     needs: [build]
-    if: ${{ inputs.tf_action != 'none' }}
+    if: ${{ inputs.tf_action != 'none' || always() }}
     uses: ./.github/workflows/terraform.yaml
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
