@@ -109,11 +109,11 @@ jobs:
         if: inputs.TF_ACTION == 'plan'
         run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this"
       
-      - name: Terraform Plan Apply
-        id: plan-apply-rest
-        working-directory: ${{ env.WORKING_DIR }}
-        if: inputs.TF_ACTION == 'plan'
-        run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars
+      # - name: Terraform Plan Apply
+      #   id: plan-apply-rest
+      #   working-directory: ${{ env.WORKING_DIR }}
+      #   if: inputs.TF_ACTION == 'plan'
+      #   run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars
 
       - name: Terraform Apply
         id: apply-kv
