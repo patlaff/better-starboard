@@ -107,7 +107,7 @@ jobs:
         id: plan-apply-kv
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'plan'
-        run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this"
+        run: terraform plan -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
       
       # - name: Terraform Plan Apply
       #   id: plan-apply-rest
@@ -119,7 +119,7 @@ jobs:
         id: apply-kv
         working-directory: ${{ env.WORKING_DIR }}
         if: inputs.TF_ACTION == 'apply'
-        run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this"
+        run: terraform apply -auto-approve -var-file=vars/${{ inputs.ENVIRONMENT }}.tfvars -target="azurerm_key_vault.this" -target="azurerm_role_assignment.TF_KV_Secrets_Reader"
       
       - name: Terraform Apply
         id: apply-rest

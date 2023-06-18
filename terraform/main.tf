@@ -41,15 +41,15 @@ resource "azurerm_key_vault" "this" {
   tags                       = local.common_tags
 }
 
-# resource "azurerm_role_assignment" "TF_KV_Secrets_Officer" {
-#   scope                = azurerm_key_vault.this.id
-#   role_definition_name = "Key Vault Secrets Officer"
-#   principal_id         = data.azurerm_client_config.current.object_id
-# }
-
-resource "azurerm_role_assignment" "CA_KV_Secrets_Officer" {
+resource "azurerm_role_assignment" "TF_KV_Secrets_Reader" {
   scope                = azurerm_key_vault.this.id
-  role_definition_name = "Key Vault Secrets Officer"
+  role_definition_name = "Key Vault Secrets Reader"
+  principal_id         = data.azurerm_client_config.current.object_id
+}
+
+resource "azurerm_role_assignment" "CA_KV_Secrets_Reader" {
+  scope                = azurerm_key_vault.this.id
+  role_definition_name = "Key Vault Secrets Reader"
   principal_id         = azurerm_user_assigned_identity.this.principal_id
 }
 
