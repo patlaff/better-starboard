@@ -126,7 +126,7 @@ resource "azurerm_container_app" "this" {
   }
   secret {
     name  = "BS_TOKEN"
-    value = data.azurerm_key_vault_secret.this["BS_TOKEN"].value
+    value = data.azurerm_key_vault_secret.this["BS-TOKEN"].value
   }
   # ingress {
   #   external_enabled = true
