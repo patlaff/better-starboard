@@ -1,5 +1,5 @@
-name: App Insights Terraform Pipeline
-run-name: App Insights - Terraform ${{ inputs.tf_action }} by ${{ github.actor }}
+name: Terraform Pipeline
+run-name: Terraform ${{ inputs.tf_action }} by ${{ github.actor }}
 
 on:
   workflow_call:
