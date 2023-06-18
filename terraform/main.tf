@@ -140,7 +140,7 @@ resource "azurerm_container_app" "this" {
     max_replicas = 1
     container {
       name   = "better-starboard"
-      image  = "patlaff/better-starboard"
+      image  = "patlaff728/better-starboard"
       cpu    = 0.5
       memory = "1Gi"
       volume_mounts {
