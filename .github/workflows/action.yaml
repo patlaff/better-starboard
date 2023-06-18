@@ -47,6 +47,7 @@ jobs:
     secrets: inherit
   
   terraform:
+    needs: [build]
     if: ${{ inputs.tf_action != 'none' }}
     uses: ./.github/workflows/terraform.yaml
     with:
