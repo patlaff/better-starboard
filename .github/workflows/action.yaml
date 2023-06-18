@@ -10,14 +10,14 @@ on:
         description: 'Environment to run deployments against'
         type: environment
         required: true
-        default: 'dev'
+        default: 'prd'
       BUILD_CONTAINER:
         description: 'Should the docker container be rebuilt?'
         type: boolean
         required: true
         default: true
       TF_ACTION:
-        description: 'The action terraform should apply'
+        description: 'The action terraform should perform'
         type: choice
         options:
           - none
