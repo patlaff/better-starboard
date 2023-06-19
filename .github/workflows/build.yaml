@@ -31,7 +31,7 @@ jobs:
 
     outputs:
       DOCKER_TAGS: ${{ steps.outputs.outputs.DOCKER_TAGS }}
-      
+
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
@@ -62,8 +62,7 @@ jobs:
 
     - name: Capture Outputs
       id: outputs
-      run: |
-        echo "DOCKER_TAGS=${{ env.DOCKER_METADATA_OUTPUT_VERSION }}" >> $GITHUB_OUTPUT
+      run: echo "DOCKER_TAGS=${{ env.DOCKER_METADATA_OUTPUT_VERSION }}" >> $GITHUB_OUTPUT
 
   # - name:
   #   run: |
