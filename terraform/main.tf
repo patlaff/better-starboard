@@ -145,11 +145,11 @@ resource "azurerm_container_app" "this" {
       memory = "1Gi"
       volume_mounts {
         name = "bsdb"
-        path = "/var/db"
+        path = "/bs/db"
       }
       volume_mounts {
         name = "bslogs"
-        path = "/var/logs"
+        path = "/bs/logs"
       }
       env {
         name  = "BS_TOKEN"
