@@ -28,6 +28,10 @@ jobs:
     name: Copy, Build and Deploy Docker Container
     runs-on: ubuntu-latest
     environment: ${{ inputs.ENVIRONMENT }}
+
+    outputs:
+      DOCKER_TAGS: ${{ steps.outputs.outputs.DOCKER_TAGS }}
+      
     steps:
     - name: Checkout Repo
       uses: actions/checkout@v3
