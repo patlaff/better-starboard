@@ -1,7 +1,5 @@
 # syntax=docker/dockerfile:1
 
-ARG BS_TOKEN
-
 FROM python:3.10-buster
 
 WORKDIR /bs
