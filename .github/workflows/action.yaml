@@ -49,7 +49,7 @@ jobs:
   
   terraform:
     needs: [build]
-    if: ${{ inputs.tf_action != 'none' || always() }}
+    if: ${{ inputs.tf_action != 'none' }}
     uses: ./.github/workflows/terraform.yaml
     with:
       ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
