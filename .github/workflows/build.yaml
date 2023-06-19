@@ -21,6 +21,10 @@ on:
       RESTART_POLICY:
         required: true
         type: string
+    outputs:
+      DOCKER_TAGS:
+        description: "Tag automatically generated from this build"
+        value: ${{ jobs.deploy.outputs.DOCKER_TAGS }}
 
 jobs:
 
