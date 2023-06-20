@@ -1,6 +1,6 @@
 locals {
   location    = "East US 2"
-  common_name = "bs-ca"
+  common_name = "bs"
   common_tags = {
     owner     = "Pat Lafferty"
     managedBy = "Terraform"
