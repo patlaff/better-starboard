@@ -12,4 +12,4 @@ COPY ./src/ .
 RUN echo "BS_TOKEN=$BS_TOKEN" >> .env
 RUN pip3 install -r requirements.txt
 
-CMD ["python3", "better-starboard.py"]
+ENTRYPOINT ["python3", "better-starboard.py"]
