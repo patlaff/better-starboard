@@ -155,18 +155,18 @@ resource "azurerm_container_app" "this" {
         name  = "BS_TOKEN"
         secret_name = "bs-token"
       }
-      readiness_probe {
-        transport = "HTTP"
-        port      = 80
-      }
-      liveness_probe {
-        transport = "HTTP"
-        port      = 80
-      }
-      startup_probe {
-        transport = "HTTP"
-        port      = 80
-      }
+      # readiness_probe {
+      #   transport = "HTTP"
+      #   port      = 80
+      # }
+      # liveness_probe {
+      #   transport = "HTTP"
+      #   port      = 80
+      # }
+      # startup_probe {
+      #   transport = "HTTP"
+      #   port      = 80
+      # }
     }
     volume {
       name         = "bsdb"
