@@ -136,7 +136,7 @@ resource "azurerm_container_app" "this" {
     value = data.azurerm_key_vault_secret.this["BS-TOKEN"].value
   }
   secret {
-    name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+    name = "applicationinsights-connection-string"
     value = azurerm_application_insights.this.connection_string
   }
   template {
@@ -161,7 +161,7 @@ resource "azurerm_container_app" "this" {
       }
       env {
         name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
-        secret_name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+        secret_name = "applicationinsights-connection-string"
       }
       # readiness_probe {
       #   transport = "HTTP"
