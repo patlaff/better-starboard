@@ -29,6 +29,13 @@ resource "azurerm_log_analytics_workspace" "this" {
   tags                = local.common_tags
 }
 
+resource "azurerm_application_insights" "this" {
+  name                = format("%s-%s-%s", local.common_name, var.env, "appi")
+  location            = azurerm_resource_group.this.location
+  resource_group_name = azurerm_resource_group.this.name
+  application_type    = "web"
+}
+
 resource "azurerm_key_vault" "this" {
   name                       = format("%s-%s-%s", local.common_name, var.env, "kv")
   location                   = azurerm_resource_group.this.location
@@ -128,13 +135,10 @@ resource "azurerm_container_app" "this" {
     name  = "bs-token"
     value = data.azurerm_key_vault_secret.this["BS-TOKEN"].value
   }
-  # ingress {
-  #   external_enabled = true
-  #   target_port      = 30000
-  #   traffic_weight {
-  #     percentage = 100
-  #   }
-  # }
+  secret {
+    name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+    value = azurerm_application_insights.this.connection_string
+  }
   template {
     min_replicas = 1
     max_replicas = 1
@@ -154,6 +158,10 @@ resource "azurerm_container_app" "this" {
       env {
         name  = "BS_TOKEN"
         secret_name = "bs-token"
+      }
+      env {
+        name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
+        secret_name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
       }
       # readiness_probe {
       #   transport = "HTTP"

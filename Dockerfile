@@ -9,7 +9,7 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 COPY ./src/ .
-RUN echo "BS_TOKEN=$BS_TOKEN" >> .env
+# RUN echo "BS_TOKEN=$BS_TOKEN" >> .env
 RUN pip3 install -r requirements.txt
 
 ENTRYPOINT ["python3", "better-starboard.py"]
