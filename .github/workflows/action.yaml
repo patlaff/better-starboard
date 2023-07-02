@@ -1,0 +1,58 @@
+name: Deploy Better-Starboard to Azure
+
+# on: 
+#   push
+
+on:
+  workflow_dispatch:
+    inputs:
+      ENVIRONMENT:
+        description: 'Environment to run deployments against'
+        type: environment
+        required: true
+        default: 'prd'
+      BUILD_CONTAINER:
+        description: 'Should the docker container be rebuilt?'
+        type: boolean
+        required: true
+        default: true
+      TF_ACTION:
+        description: 'The action terraform should perform'
+        type: choice
+        options:
+          - none
+          - plan
+          - apply
+          - plan-destroy
+          - destroy
+        required: true
+        default: 'plan'
+    # paths:
+    #   - '.github/workflows/**'
+    #   - 'src/**'
+    #   - 'Dockerfile'
+
+jobs:
+
+  build:
+    if: ${{ inputs.BUILD_CONTAINER }}
+    uses: ./.github/workflows/build.yaml
+    with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      FILENAME: better-starboard
+      DEST_DIR: programs 
+      DB_VOLUME: bsdb
+      LOG_VOLUME: bslogs
+      RESTART_POLICY: unless-stopped
+    secrets: inherit
+
+  
+  terraform:
+    needs: [build]
+    if: ${{ inputs.tf_action != 'none' }}
+    uses: ./.github/workflows/terraform.yaml
+    with:
+      ENVIRONMENT: ${{ inputs.ENVIRONMENT }}
+      TF_ACTION: ${{ inputs.TF_ACTION }}
+      DOCKER_TAGS: ${{ needs.build.outputs.DOCKER_TAGS }}
+    secrets: inherit

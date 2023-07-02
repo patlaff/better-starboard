@@ -3,6 +3,7 @@ import sys
 import logging
 import discord
 from discord.ext import commands
+from opencensus.ext.azure.log_exporter import AzureLogHandler
 import sqlite3 as sql
 
 def createDir(path):
@@ -15,7 +16,7 @@ def createDir(path):
     return path
 
 def createChildDir(folder):
-    ## Create log folder if not exists ##
+    ## Create log folder if not exists ## 
     path = os.path.join(sys.path[0], folder)
     # Check whether the specified path exists or not
     path_exist = os.path.exists(path)
@@ -31,12 +32,15 @@ def createLogger(logger_name, folder_name='/bs/logs'):
         log_path = createDir(folder_name)
     else:
         log_path = createChildDir(folder_name)
+    streamer = logging.StreamHandler(stream=sys.stdout)
     formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
     handler = logging.FileHandler(os.path.join(log_path, f'{logger_name}.log'))
     handler.setFormatter(formatter)
     logger = logging.getLogger(logger_name)
-    logger.setLevel(logging.INFO)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(streamer)
     logger.addHandler(handler)
+    logger.addHandler(AzureLogHandler())
     return logger
 
 def createDbConn(db_name='bs', folder_name='/bs/db'):

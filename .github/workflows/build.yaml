@@ -1,0 +1,80 @@
+name: Build and Push Better-Starboard Container
+
+on:
+  workflow_call:
+    inputs:
+      ENVIRONMENT:
+        required: true
+        type: string
+      FILENAME:
+        required: true
+        type: string
+      DEST_DIR:
+        required: true
+        type: string
+      DB_VOLUME:
+        required: true
+        type: string
+      LOG_VOLUME:
+        required: true
+        type: string
+      RESTART_POLICY:
+        required: true
+        type: string
+    outputs:
+      DOCKER_TAGS:
+        description: "Tag automatically generated from this build"
+        value: ${{ jobs.deploy.outputs.DOCKER_TAGS }}
+
+jobs:
+
+  deploy:
+    name: Copy, Build and Deploy Docker Container
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ENVIRONMENT }}
+
+    outputs:
+      DOCKER_TAGS: ${{ steps.outputs.outputs.DOCKER_TAGS }}
+
+    steps:
+    - name: Checkout Repo
+      uses: actions/checkout@v3
+
+    # - name: Set dotenv vars
+    #   run: echo "BS_TOKEN=${{ secrets.BS_TOKEN }}" >> ./src/.env
+
+    - name: Log in to Docker Hub
+      uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Extract metadata (tags, labels) for Docker
+      id: meta
+      uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+      with:
+        images: patlaff728/better-starboard
+    
+    - name: Build and push Docker image
+      uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+      with:
+        context: .
+        file: ./Dockerfile
+        push: true
+        tags: ${{ steps.meta.outputs.tags }}
+        labels: ${{ steps.meta.outputs.labels }}
+
+    - name: Capture Outputs
+      id: outputs
+      run: echo "DOCKER_TAGS=${{ env.DOCKER_METADATA_OUTPUT_VERSION }}" >> $GITHUB_OUTPUT
+
+  # - name:
+  #   run: |
+  #     docker build --tag ${{ inputs.FILENAME }} ~/${{ inputs.DEST_DIR }}/${{ inputs.FILENAME }}/.
+  #     (docker stop ${{ inputs.FILENAME }} || true) && \
+  #     (docker rm ${{ inputs.FILENAME }} || true) && \
+  #     docker run -d \
+  #       --restart=${{ inputs.RESTART_POLICY }} \
+  #       --volume ${{ inputs.DB_VOLUME }}:/bs/db \
+  #       --volume ${{ inputs.LOG_VOLUME }}:/bs/logs \
+  #       --name ${{ inputs.FILENAME }} ${{ inputs.FILENAME }}:latest
