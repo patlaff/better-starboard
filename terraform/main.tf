@@ -139,6 +139,10 @@ resource "azurerm_container_app" "this" {
     name = "applicationinsights-connection-string"
     value = azurerm_application_insights.this.connection_string
   }
+  secret {
+    name = "storage-account-key"
+    value = azurerm_storage_account.this.primary_access_key
+  }
   template {
     min_replicas = 1
     max_replicas = 1
@@ -162,6 +166,18 @@ resource "azurerm_container_app" "this" {
       env {
         name = "APPLICATIONINSIGHTS_CONNECTION_STRING"
         secret_name = "applicationinsights-connection-string"
+      }
+      env {
+        name = "STORAGE_ACCOUNT_NAME"
+        value = azurerm_storage_account.this.name
+      }
+      env {
+        name = "STORAGE_ACCOUNT_TABLE_ENDPOINT"
+        value = azurerm_storage_account.this.primary_table_endpoint
+      }
+      env {
+        name = "STORAGE_ACCOUNT_KEY"
+        secret_name = "storage-account-key"
       }
       # readiness_probe {
       #   transport = "HTTP"

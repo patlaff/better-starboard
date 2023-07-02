@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 import helpers.vars as vars
 from helpers.helpers import createLogger, createEmbed, conn, bot
-from helpers.db import createTables
+from helpers.db import AzureTables
 
 logger = createLogger('bs')
 
@@ -17,7 +17,7 @@ class Events(commands.Cog):
         print(response)
 
         # Create SQL Tables & Connect to DB
-        createTables()
+        AzureTables()
 
     @commands.Cog.listener()
     async def on_raw_reaction_add(self, payload):
