@@ -1,6 +1,7 @@
 # Privacy Policy for Better-Starboard
 
 *Effective Date*: 2/12/2025
+
 *Last Updated*: 2/12/2025
 
 Better-Starboard ("the App") is a Discord bot that enables users to create a customizable starboard system within their Discord servers based on any number of reactions. This Privacy Policy outlines how we collect, use, and protect information related to the App’s functionality.
