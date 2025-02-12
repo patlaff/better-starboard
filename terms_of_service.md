@@ -26,7 +26,7 @@ By adding and using Better-Starboard in your Discord server, you agree to abide 
 - The App collects and stores limited server configuration data (e.g., guild IDs, channel IDs, message IDs) to function properly.
 - No personally identifiable information (PII) is collected or stored.
 - Message content is never stored by the App.
-- Full details on data collection and use can be found in our [Privacy Policy](#).
+- Full details on data collection and use can be found in our [Privacy Policy](privacy_policy.md).
 
 ---
 
