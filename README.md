@@ -88,7 +88,7 @@ All commands require **Manage Channels** and **Manage Messages** permissions.
 
 | Command | Description |
 |---------|-------------|
-| `\|set <channel>` | Set the starboard channel. Required before anything else works. Sets the default threshold to 5 on first use. |
+| `\|set #channel` | Set the starboard channel. Required before anything else works. Sets the default threshold to 5 on first use. Pass a channel mention or ID. |
 
 ### Tuning
 
@@ -100,8 +100,8 @@ All commands require **Manage Channels** and **Manage Messages** permissions.
 
 | Command | Description |
 |---------|-------------|
-| `\|ignore_channel <channel>` | Reactions in this channel will never trigger starboard posting. Useful for spoiler channels, bot-command channels, etc. |
-| `\|add_channel <channel>` | Remove a channel from the ignore list, re-enabling starboard eligibility. |
+| `\|ignore_channel #channel` | Reactions in this channel will never trigger starboard posting. Useful for spoiler channels, bot-command channels, etc. Pass a channel mention or ID. |
+| `\|add_channel #channel` | Remove a channel from the ignore list, re-enabling starboard eligibility. Pass a channel mention or ID. |
 
 ### Reaction exceptions
 

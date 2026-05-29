@@ -22,12 +22,8 @@ class StarboardConfig(commands.Cog):
 
     @commands.command(name="set")
     @_admin_check()
-    async def set_channel(self, ctx: commands.Context, channel_name: str):
-        """Set the starboard channel. Creates config if it doesn't exist."""
-        channel = discord.utils.get(ctx.guild.text_channels, name=channel_name)
-        if channel is None:
-            await ctx.send(f"No text channel named `{channel_name}` found.")
-            return
+    async def set_channel(self, ctx: commands.Context, channel: discord.TextChannel):
+        """Set the starboard channel. Pass a channel mention or ID."""
         await db.set_starboard_channel(self.pool, ctx.guild.id, channel.id)
         await ctx.send(f"Starboard channel set to {channel.mention}.")
 
@@ -37,7 +33,7 @@ class StarboardConfig(commands.Cog):
         """Set the minimum reaction count for a message to be pinned."""
         config = await db.get_config(self.pool, ctx.guild.id)
         if config is None:
-            await ctx.send("No starboard configured yet. Run `|set <channel>` first.")
+            await ctx.send("No starboard configured yet. Run `|set #channel` first.")
             return
         if number < 1:
             await ctx.send("Threshold must be at least 1.")
@@ -47,23 +43,15 @@ class StarboardConfig(commands.Cog):
 
     @commands.command(name="ignore_channel")
     @_admin_check()
-    async def ignore_channel(self, ctx: commands.Context, channel_name: str):
-        """Prevent messages in a channel from ever being pinned."""
-        channel = discord.utils.get(ctx.guild.text_channels, name=channel_name)
-        if channel is None:
-            await ctx.send(f"No text channel named `{channel_name}` found.")
-            return
+    async def ignore_channel(self, ctx: commands.Context, channel: discord.TextChannel):
+        """Prevent messages in a channel from ever being pinned. Pass a channel mention or ID."""
         await db.add_ignored_channel(self.pool, ctx.guild.id, channel.id)
         await ctx.send(f"{channel.mention} will now be ignored by the starboard.")
 
     @commands.command(name="add_channel")
     @_admin_check()
-    async def add_channel(self, ctx: commands.Context, channel_name: str):
-        """Re-enable starboard eligibility for a previously ignored channel."""
-        channel = discord.utils.get(ctx.guild.text_channels, name=channel_name)
-        if channel is None:
-            await ctx.send(f"No text channel named `{channel_name}` found.")
-            return
+    async def add_channel(self, ctx: commands.Context, channel: discord.TextChannel):
+        """Re-enable starboard eligibility for a previously ignored channel. Pass a channel mention or ID."""
         await db.remove_ignored_channel(self.pool, ctx.guild.id, channel.id)
         await ctx.send(f"{channel.mention} is no longer ignored.")
 
@@ -87,7 +75,7 @@ class StarboardConfig(commands.Cog):
         """Display the current starboard configuration for this server."""
         config = await db.get_config(self.pool, ctx.guild.id)
         if config is None:
-            await ctx.send("No starboard configured yet. Run `|set <channel>` to get started.")
+            await ctx.send("No starboard configured yet. Run `|set #channel` to get started.")
             return
 
         starboard_ch = ctx.guild.get_channel(config["starboard_channel_id"])
