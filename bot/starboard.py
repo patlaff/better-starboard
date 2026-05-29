@@ -5,6 +5,7 @@ from . import db
 
 
 def _emoji_str(emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
+    """Stable string key for an emoji. Custom emoji use their numeric ID."""
     if isinstance(emoji, str):
         return emoji
     if emoji.id:
@@ -12,27 +13,86 @@ def _emoji_str(emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
     return emoji.name
 
 
-def _count_reactions(message: discord.Message, ignored: set[str]) -> int:
-    total = 0
+def _emoji_display(emoji: discord.PartialEmoji | discord.Emoji | str) -> str:
+    """Human-readable emoji string suitable for Discord messages."""
+    if isinstance(emoji, str):
+        return emoji
+    # Custom emoji: format as <:name:id> or <a:name:id>
+    if emoji.id:
+        animated = getattr(emoji, "animated", False)
+        prefix = "a" if animated else ""
+        return f"<{prefix}:{emoji.name}:{emoji.id}>"
+    return emoji.name
+
+
+def _pick_winning_emoji(
+    message: discord.Message,
+    ignored: set[str],
+    current_winner: str | None,
+) -> tuple[str, int]:
+    """
+    Return (winning_emoji_display, winning_count).
+
+    Rules:
+    - The emoji with the highest reaction count wins.
+    - On a tie, the current stored winner (i.e. the one that broke the threshold
+      first) is preferred — it keeps its position.
+    - Ignored emoji are skipped entirely.
+    """
+    best_display: str | None = None
+    best_count: int = 0
+
     for reaction in message.reactions:
         key = _emoji_str(reaction.emoji)
-        if key not in ignored:
-            total += reaction.count
-    return total
+        if key in ignored:
+            continue
+        display = _emoji_display(reaction.emoji)
+        count = reaction.count
+
+        if count > best_count:
+            best_count = count
+            best_display = display
+        elif count == best_count and display == current_winner:
+            # Tie: keep the incumbent (first to break threshold)
+            best_display = current_winner
+
+    return (best_display or "⭐", best_count)
 
 
-def _build_embed(message: discord.Message, reaction_count: int) -> discord.Embed:
+def _count_reactions(message: discord.Message, ignored: set[str]) -> int:
+    return sum(
+        r.count for r in message.reactions if _emoji_str(r.emoji) not in ignored
+    )
+
+
+def _build_embed(
+    message: discord.Message,
+    reaction_count: int,
+    winning_emoji: str,
+    winning_count: int,
+) -> discord.Embed:
+    """
+    Build the starboard embed matching the target style:
+
+        **Author name**
+        message content
+
+        Message   Channel     Reaction
+        [Link]    #channel    💯 (3)
+    """
+    # Avatar inline with name via set_author; message content as description
     embed = discord.Embed(
         description=message.content or None,
-        color=discord.Color.gold(),
-        timestamp=message.created_at,
+        color=discord.Color.dark_grey(),
     )
     embed.set_author(
         name=message.author.display_name,
         icon_url=message.author.display_avatar.url,
     )
-    embed.add_field(name="Source", value=f"[Jump to message]({message.jump_url})", inline=False)
-    embed.set_footer(text=f"{reaction_count} reactions · #{message.channel.name}")
+
+    embed.add_field(name="Message", value=f"[Link]({message.jump_url})", inline=True)
+    embed.add_field(name="Channel", value=f"#{message.channel.name}", inline=True)
+    embed.add_field(name="Reaction", value=f"{winning_emoji}({winning_count})", inline=True)
 
     if message.attachments:
         first = message.attachments[0]
@@ -60,8 +120,7 @@ async def handle_reaction(
         return
 
     ignored_reactions = set(await db.get_ignored_reactions(pool, guild_id))
-    added_emoji_key = _emoji_str(payload.emoji)
-    if added_emoji_key in ignored_reactions:
+    if _emoji_str(payload.emoji) in ignored_reactions:
         return
 
     channel = bot.get_channel(payload.channel_id)
@@ -83,14 +142,39 @@ async def handle_reaction(
     pin = await db.get_pin(pool, guild_id, message.id)
 
     if pin is not None:
+        # Recalculate winning emoji, preserving the stored winner on ties.
+        winning_emoji, winning_count = _pick_winning_emoji(
+            message, ignored_reactions, pin["winning_emoji"]
+        )
+        # Persist if the winner changed (a different emoji now leads).
+        if winning_emoji != pin["winning_emoji"]:
+            await db.update_pin_winning_emoji(pool, guild_id, message.id, winning_emoji)
+
         try:
             sb_msg = await starboard_channel.fetch_message(pin["starboard_message_id"])
-            await sb_msg.edit(embed=_build_embed(message, reaction_count))
+            await sb_msg.edit(
+                embed=_build_embed(message, reaction_count, winning_emoji, winning_count)
+            )
         except discord.NotFound:
             pass
         return
 
     if reaction_count >= threshold:
-        embed = _build_embed(message, reaction_count)
+        # The emoji currently being added broke (or contributed to breaking) the
+        # threshold — treat it as the initial winner, then let _pick_winning_emoji
+        # confirm whether another emoji already has a higher count.
+        trigger_display = _emoji_display(payload.emoji)
+        winning_emoji, winning_count = _pick_winning_emoji(
+            message, ignored_reactions, trigger_display
+        )
+
+        embed = _build_embed(message, reaction_count, winning_emoji, winning_count)
         sb_msg = await starboard_channel.send(embed=embed)
-        await db.create_pin(pool, guild_id, message.id, channel.id, sb_msg.id)
+        await db.create_pin(
+            pool,
+            guild_id,
+            message.id,
+            channel.id,
+            sb_msg.id,
+            winning_emoji,
+        )

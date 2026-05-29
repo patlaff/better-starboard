@@ -50,17 +50,36 @@ async def create_pin(
     original_message_id: int,
     original_channel_id: int,
     starboard_message_id: int,
+    winning_emoji: str,
 ):
     await pool.execute(
         """
-        INSERT INTO pins (guild_id, original_message_id, original_channel_id, starboard_message_id)
-        VALUES ($1, $2, $3, $4)
+        INSERT INTO pins (guild_id, original_message_id, original_channel_id, starboard_message_id, winning_emoji)
+        VALUES ($1, $2, $3, $4, $5)
         ON CONFLICT DO NOTHING
         """,
         guild_id,
         original_message_id,
         original_channel_id,
         starboard_message_id,
+        winning_emoji,
+    )
+
+
+async def update_pin_winning_emoji(
+    pool: asyncpg.Pool,
+    guild_id: int,
+    original_message_id: int,
+    winning_emoji: str,
+):
+    await pool.execute(
+        """
+        UPDATE pins SET winning_emoji = $3
+        WHERE guild_id = $1 AND original_message_id = $2
+        """,
+        guild_id,
+        original_message_id,
+        winning_emoji,
     )
 
 

@@ -7,13 +7,19 @@ config = context.config
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-config.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+# The app uses asyncpg, but Alembic runs sync migrations via psycopg2.
+# Strip "+asyncpg" from the driver if present so SQLAlchemy picks psycopg2.
+raw_url = os.environ["DATABASE_URL"]
+sync_url = raw_url.replace("postgresql+asyncpg://", "postgresql://")
+config.set_main_option("sqlalchemy.url", sync_url)
+
 
 def run_migrations_offline():
     url = config.get_main_option("sqlalchemy.url")
     context.configure(url=url, literal_binds=True, dialect_opts={"paramstyle": "named"})
     with context.begin_transaction():
         context.run_migrations()
+
 
 def run_migrations_online():
     connectable = engine_from_config(
@@ -25,6 +31,7 @@ def run_migrations_online():
         context.configure(connection=connection)
         with context.begin_transaction():
             context.run_migrations()
+
 
 if context.is_offline_mode():
     run_migrations_offline()
