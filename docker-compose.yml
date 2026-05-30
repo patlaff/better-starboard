@@ -6,6 +6,9 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    networks:
+      - apps_net
+      - internal
 
   db:
     image: postgres:16-alpine
@@ -21,6 +24,15 @@ services:
       interval: 5s
       timeout: 5s
       retries: 10
+    networks:
+      - internal
+
+networks:
+  apps_net:
+    external: true   # pre-existing macvlan network — "docker network create" separately
+  internal:
+    driver: bridge
+    internal: true   # no external routing; db is unreachable from outside
 
 volumes:
   pgdata:

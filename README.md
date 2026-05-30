@@ -6,6 +6,14 @@ A Discord bot that surfaces the most-reacted-to messages in your community. When
 
 ---
 
+## Installation
+
+[Install Using This Link](https://discord.com/api/oauth2/authorize?client_id=1008147831443427379&permissions=8&scope=bot)
+
+Note that the bot currently requires administrator rights. I will pull in these permissions in a future release.
+
+---
+
 ## Features
 
 - Posts messages to a starboard channel once they hit a configurable reaction threshold
