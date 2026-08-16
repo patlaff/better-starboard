@@ -102,7 +102,7 @@ All commands require **Manage Channels** and **Manage Messages** permissions.
 
 | Command | Description |
 |---------|-------------|
-| `\|threshold <number>` | Change the minimum total reactions needed before a message is pinned. Raise it to make the starboard more exclusive; lower it to be more permissive. |
+| `\|threshold <number>` | Change the minimum number of reactions of a *single* emoji needed before a message is pinned. Reactions from different emoji are not added together — one emoji has to reach the number on its own. Raise it to make the starboard more exclusive; lower it to be more permissive. |
 
 ### Channel exceptions
 
@@ -133,10 +133,10 @@ Every time any user adds a reaction to any message, the bot evaluates it:
 1. **Channel filter** — if the message's channel is on the ignore list, stop.
 2. **Reaction filter** — if the specific emoji added is on the ignore list, stop.
 3. **Config check** — if this server hasn't been set up yet, stop.
-4. **Count reactions** — sum all reactions across all emoji types, excluding ignored emoji.
+4. **Count reactions** — count each emoji separately (excluding ignored emoji) and take the highest single-emoji count. Counts are never summed across different emoji.
 5. **Already pinned?**
    - Yes → update the existing starboard embed with the new count.
-   - No, and count ≥ threshold → post a new embed to the starboard channel and record the pin.
+   - No, and the highest single-emoji count ≥ threshold → post a new embed to the starboard channel and record the pin.
 
 Reaction removals are not currently handled. A message that reaches the threshold stays pinned even if reactions are later removed.
 
