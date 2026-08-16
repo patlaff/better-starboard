@@ -34,7 +34,8 @@ def _pick_winning_emoji(
     Return (winning_emoji_display, winning_count).
 
     Rules:
-    - The emoji with the highest reaction count wins.
+    - The emoji with the highest reaction count wins. Counts are never summed
+      across emoji — each emoji is judged on its own count.
     - On a tie, the current stored winner (i.e. the one that broke the threshold
       first) is preferred — it keeps its position.
     - Ignored emoji are skipped entirely.
@@ -59,15 +60,8 @@ def _pick_winning_emoji(
     return (best_display or "⭐", best_count)
 
 
-def _count_reactions(message: discord.Message, ignored: set[str]) -> int:
-    return sum(
-        r.count for r in message.reactions if _emoji_str(r.emoji) not in ignored
-    )
-
-
 def _build_embed(
     message: discord.Message,
-    reaction_count: int,
     winning_emoji: str,
     winning_count: int,
 ) -> discord.Embed:
@@ -131,7 +125,6 @@ async def handle_reaction(
     except discord.NotFound:
         return
 
-    reaction_count = _count_reactions(message, ignored_reactions)
     threshold = config["threshold"]
     starboard_channel_id = config["starboard_channel_id"]
 
@@ -153,22 +146,23 @@ async def handle_reaction(
         try:
             sb_msg = await starboard_channel.fetch_message(pin["starboard_message_id"])
             await sb_msg.edit(
-                embed=_build_embed(message, reaction_count, winning_emoji, winning_count)
+                embed=_build_embed(message, winning_emoji, winning_count)
             )
         except discord.NotFound:
             pass
         return
 
-    if reaction_count >= threshold:
-        # The emoji currently being added broke (or contributed to breaking) the
-        # threshold — treat it as the initial winner, then let _pick_winning_emoji
-        # confirm whether another emoji already has a higher count.
-        trigger_display = _emoji_display(payload.emoji)
-        winning_emoji, winning_count = _pick_winning_emoji(
-            message, ignored_reactions, trigger_display
-        )
+    # A message qualifies only when a *single* emoji reaches the threshold on its
+    # own. Other reactions may be present, but their counts are not added in.
+    # The emoji being added right now is treated as the initial winner so it wins
+    # ties against emoji that reached the same count earlier.
+    trigger_display = _emoji_display(payload.emoji)
+    winning_emoji, winning_count = _pick_winning_emoji(
+        message, ignored_reactions, trigger_display
+    )
 
-        embed = _build_embed(message, reaction_count, winning_emoji, winning_count)
+    if winning_count >= threshold:
+        embed = _build_embed(message, winning_emoji, winning_count)
         sb_msg = await starboard_channel.send(embed=embed)
         await db.create_pin(
             pool,
